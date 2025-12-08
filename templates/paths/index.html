@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% load django_bootstrap5 %}
+
+{% block content %}
+<main>
+    {% comment %} <form>
+        {% bootstrap_form form %}
+        {% bootstrap_button button_type="submit" content="Отправить" %}
+    </form> {% endcomment %}
+
+<h3>
+  Search Contacts
+  <span class="htmx-indicator">Ищем...</span>
+</h3>
+<input class="form-control" type="search"
+       name="search" placeholder="Начните вводить название"
+       hx-post="/search_start/"
+       hx-trigger="input changed delay:500ms, keyup[key=='Enter']"
+       hx-target="#search-results"
+       hx-indicator=".htmx-indicator">
+
+
+<p id="search-results"></p>
+
+
+
+
+
+
+
+
+
+</main>
+{% endblock content %}
