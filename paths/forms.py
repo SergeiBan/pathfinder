@@ -6,5 +6,5 @@ class CalculationForm(forms.ModelForm):
     
     class Meta:
         model = Calculation
-        fields = ('foreign_port', 'end_city')
+        fields = ('start_port', 'endpoint_name')
 
