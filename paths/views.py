@@ -1,13 +1,16 @@
 from django.shortcuts import render
-from .forms import StartCityForm
-from .models import StartCity
+from .forms import CalculationForm
+from .models import Calculation
 
 
 def index(request):
-    form = StartCityForm(request.GET or None)
+    form = CalculationForm(request.POST or None)
     context = {
-        'form': form,
+        'form': form
     }
+
+    if form.is_valid():
+        form = form.save()
     return render(request, 'paths/index.html', context)
 
 

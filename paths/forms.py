@@ -1,9 +1,10 @@
-from django.forms import ModelForm
-from .models import StartCity
+from django import forms
+from .models import Calculation
 
 
-class StartCityForm(ModelForm):
+class CalculationForm(forms.ModelForm):
     
     class Meta:
-        model = StartCity
-        fields = ("name",)
+        model = Calculation
+        fields = ('start_city', 'end_city')
+
