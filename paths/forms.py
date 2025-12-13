@@ -1,10 +1,14 @@
 from django import forms
-from .models import Calculation
+from .models import SeaCalculation
 
 
-class CalculationForm(forms.ModelForm):
+class SeaCalculationForm(forms.ModelForm):
     
     class Meta:
-        model = Calculation
-        fields = ('start_port', 'endpoint_name')
+        model = SeaCalculation
+        fields = ('start_port', 'sea_end_terminal', 'etd', 'container')
+
+        widgets = {
+            'etd': forms.DateInput(attrs={'type': 'date'}),
+        }
 

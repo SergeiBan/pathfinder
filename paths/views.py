@@ -1,10 +1,10 @@
 from django.shortcuts import render
-from .forms import CalculationForm
-from .models import Calculation
+from .forms import SeaCalculationForm
+from .models import SeaCalculation
 
 
 def index(request):
-    form = CalculationForm(request.POST or None)
+    form = SeaCalculationForm(request.POST or None)
     context = {
         'form': form
     }
