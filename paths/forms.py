@@ -6,9 +6,10 @@ class SeaCalculationForm(forms.ModelForm):
     
     class Meta:
         model = SeaCalculation
-        fields = ('start_port', 'sea_end_terminal', 'etd', 'container')
+        fields = ('start_port', 'sea_end_terminal', 'etd_from', 'etd_to', 'container')
 
         widgets = {
-            'etd': forms.DateInput(attrs={'type': 'date'}),
+            'etd_from': forms.DateInput(attrs={'type': 'date'}),
+            'etd_to': forms.DateInput(attrs={'type': 'date'}),
         }
 

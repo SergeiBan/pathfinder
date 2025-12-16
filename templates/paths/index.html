@@ -9,6 +9,22 @@
             {% bootstrap_form form %}
             {% bootstrap_button button_type="submit" content="Посчитать" button_class="btn-info w-100" %}
         </form>
+
+        {% if form.is_valid %}
+            <p>Самый дешевый вариант: 
+                {% for etd in form.instance.cheapest.etd.all %}
+                    {{ etd }}
+                {% endfor %}
+                ${{ form.instance.cheapest.rate }}
+            </p>
+
+            <p>Самый быстрый вариант: 
+                {% for etd in form.instance.fastest.etd.all %}
+                    {{ etd }}
+                {% endfor %}
+                ${{ form.instance.fastest.rate }}
+            </p>
+        {% endif %}
     </div>
 </main>
 {% endblock content %}

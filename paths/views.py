@@ -5,11 +5,12 @@ from .models import SeaCalculation
 
 def index(request):
     form = SeaCalculationForm(request.POST or None)
+
+    if form.is_valid():
+        form.save()
+
     context = {
         'form': form
     }
-
-    if form.is_valid():
-        form = form.save()
 
     return render(request, 'paths/index.html', context)
