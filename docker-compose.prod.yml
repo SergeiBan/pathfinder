@@ -26,11 +26,11 @@ services:
   
 
   web:
-    build: .
+    image: sergeiban/pathfinder_web
     container_name: backend
     restart: unless-stopped
     volumes:
-      - static:/app/static-production/
+      - static:/app/static_production/
     env_file: .env-prod
     depends_on:
       - postgres
