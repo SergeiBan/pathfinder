@@ -26,7 +26,7 @@ services:
   
 
   web:
-    image: sergeiban/pathfinder_web
+    image: sergeiban/pathfinder_web:latest
     container_name: backend
     restart: unless-stopped
     volumes:
