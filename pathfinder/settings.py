@@ -12,7 +12,7 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 DEBUG = True
 
 ALLOWED_HOSTS = ['127.0.0.1', '172.17.0.1', '155.212.217.167', 'swpathfinder.ru']
-CSRF_TRUSTED_ORIGINS = ['155.212.217.167', 'https://swpathfinder.ru', 'swpathfinder.ru']
+CSRF_TRUSTED_ORIGINS = ['127.0.0.1', '172.17.0.1', '155.212.217.167', 'https://swpathfinder.ru']
 
 
 INSTALLED_APPS = [
