@@ -25,7 +25,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: sergeiban/pathfinder:latest
+          tags: sergeiban/pathfinder_web:latest
 
   deploy:
     runs-on: ubuntu-latest
