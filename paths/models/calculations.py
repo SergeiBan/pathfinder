@@ -54,5 +54,10 @@ class SeaCalculation(models.Model):
                     self.cheapest= applicable_rates.order_by('rate').first()
                     self.fastest = applicable_rates.order_by('etd__etd').first()
                     super().save(*args, **kwargs)
+    
+    class Meta:
+        verbose_name = "Расчёт моря"
+        verbose_name_plural = "Расчёты моря"
+
 
    

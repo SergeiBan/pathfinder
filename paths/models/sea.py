@@ -26,6 +26,10 @@ class StartPort(models.Model):
 
     def __str__(self):
         return self.name
+    
+    class Meta:
+        verbose_name = 'Порт отправки'
+        verbose_name_plural = 'Порты отправки'
 
 
 class SeaEndTerminal(models.Model):
@@ -33,6 +37,10 @@ class SeaEndTerminal(models.Model):
 
     def __str__(self):
         return self.name
+    
+    class Meta:
+        verbose_name = 'Морской терминал прибытия'
+        verbose_name_plural = 'Морские терминалы прибытия'
 
 
 class SeaLine(models.Model):
@@ -40,15 +48,22 @@ class SeaLine(models.Model):
 
     def __str__(self):
         return self.name
+    
+    class Meta:
+        verbose_name = 'Морская линия'
+        verbose_name_plural = 'Морские линии'
+
 
 class SeaETD(models.Model):
     etd = models.DateField('Дата выхода судна')
 
-    class Meta:
-        ordering = ['etd']
-
     def __str__(self):
         return str(self.etd)
+
+    class Meta:
+        ordering = ['etd']
+        verbose_name = 'Дата выхода судна'
+        verbose_name_plural = 'Даты выхода судов'
 
 
 class SeaRate(models.Model):
@@ -62,3 +77,7 @@ class SeaRate(models.Model):
 
     def __str__(self):
         return str(self.rate)
+    
+    class Meta:
+        verbose_name = 'Морская ставка'
+        verbose_name_plural = 'Морские ставки'
