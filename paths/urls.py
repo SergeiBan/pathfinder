@@ -6,4 +6,5 @@ app_name = 'paths'
 
 urlpatterns = [
     path('', views.index, name='index'),
+    path('sea_calculation/', views.sea_calculation, name='sea_calculation'),
 ]

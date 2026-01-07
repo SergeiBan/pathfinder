@@ -4,29 +4,11 @@
 {% block content %}
 <main class="row">
     <div class="col-md-6 mx-auto">
-        <form method="POST">
+        <form method="GET">
             {% csrf_token %}
             {% bootstrap_form form %}
-            {% bootstrap_button button_type="submit" content="Посчитать" button_class="btn-info w-100" %}
+            {% bootstrap_button button_type="submit" content="Начать" button_class="btn-info w-100" %}
         </form>
-
-        {% if form.is_valid %}
-            <p>Самый дешевый вариант: 
-                {% for etd in form.instance.cheapest.etd.all %}
-                    {{ etd }}
-                {% endfor %}
-                ${{ form.instance.cheapest.rate }}
-                {{ form.instance.cheapest.sea_line }}
-            </p>
-
-            <p>Самый быстрый вариант: 
-                {% for etd in form.instance.fastest.etd.all %}
-                    {{ etd }}
-                {% endfor %}
-                ${{ form.instance.fastest.rate }}
-                {{ form.instance.fastest.sea_line }}
-            </p>
-        {% endif %}
     </div>
 </main>
 {% endblock content %}

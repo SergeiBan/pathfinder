@@ -13,3 +13,13 @@ class SeaCalculationForm(forms.ModelForm):
             'etd_to': forms.DateInput(attrs={'type': 'date'}),
         }
 
+
+MODALITY_CHOICES = (
+    ('all', 'Все'),
+    ('sea', 'Море'),
+)
+class ModalityForm(forms.Form):
+    modality = forms.ChoiceField(
+        label='Транспорт',
+        choices=MODALITY_CHOICES,
+    )
