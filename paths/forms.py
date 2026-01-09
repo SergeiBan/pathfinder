@@ -17,6 +17,7 @@ class SeaCalculationForm(forms.ModelForm):
 MODALITY_CHOICES = (
     ('all', 'Все'),
     ('sea', 'Море'),
+    ('rr', 'ЖД')
 )
 class ModalityForm(forms.Form):
     modality = forms.ChoiceField(

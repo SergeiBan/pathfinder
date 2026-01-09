@@ -1,6 +1,6 @@
 from django.db import models
 from django.db.models import Avg, Min
-from . import SeaEndTerminal, StartPort, SeaRate
+from . import SeaEndTerminal, StartPort, SeaRate, RRStartCity
 from datetime import date
 
 
@@ -60,4 +60,7 @@ class SeaCalculation(models.Model):
         verbose_name_plural = "Расчёты моря"
 
 
-   
+
+class RRCalculation(models.Model):
+    # start_city = models.ForeignKey(RRStartCity, on_delete=models.CASCADE, related_name='rates')
+    pass

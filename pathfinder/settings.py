@@ -8,7 +8,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv('SECRET_KEY')
 
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['127.0.0.1', '172.17.0.1', '155.212.217.167', 'swpathfinder.ru']
 CSRF_TRUSTED_ORIGINS = ['https://swpathfinder.ru']
