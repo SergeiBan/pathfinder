@@ -1,10 +1,12 @@
 from django.contrib import admin
 from .models import (
-    StartPort, SeaEndTerminal, SeaCalculation,
+    StartPort, SeaEndTerminal, SeaCalculation, SeaRRCalculation,
     SeaLine, SeaRate, SeaETD,
 
     RRStartTerminal, RREndTerminal, RRETD, RRRate,
-    RRStartCity, RREndCity
+    RRStartCity, RREndCity,
+
+    TruckEndCity
 )
 
 
@@ -21,3 +23,7 @@ admin.site.register(RRETD)
 admin.site.register(RRRate)
 admin.site.register(RRStartCity)
 admin.site.register(RREndCity)
+
+admin.site.register(SeaRRCalculation)
+
+admin.site.register(TruckEndCity)

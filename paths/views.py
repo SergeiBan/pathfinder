@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from .forms import SeaCalculationForm, ModalityForm, RRCalculationForm
+from .forms import SeaCalculationForm, ModalityForm, RRCalculationForm, SeaRRCalculationForm
 from .models import SeaCalculation
 
 
@@ -12,6 +12,8 @@ def index(request):
             return redirect('paths:sea_calculation')
         elif form.cleaned_data['modality'] == 'rr':
             return redirect('paths:rr_calculation')
+        elif form.cleaned_data['modality'] == 'sea_rr':
+            return redirect('paths:sea_rr_calculation')
 
     context = {
         'form': form
@@ -44,3 +46,17 @@ def rr_calculation(request):
     }
 
     return render(request, 'paths/rr_calculation.html', context)
+
+
+def sea_rr_calculation(request):
+    form = SeaRRCalculationForm(request.POST or None)
+
+    if form.is_valid():
+        # form.save()
+        print('valid')
+
+    context = {
+        'form': form
+    }
+
+    return render(request, 'paths/sea_rr_calculation.html', context)

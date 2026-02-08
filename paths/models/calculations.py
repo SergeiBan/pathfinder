@@ -1,6 +1,8 @@
 from django.db import models
 from django.db.models import Avg, Min
-from . import SeaEndTerminal, StartPort, SeaRate, RRStartCity, RREndCity, RRETD, RRRate, RRStartTerminal, RREndTerminal
+from . import (
+    SeaEndTerminal, StartPort, SeaRate, RRStartCity, RREndCity,
+    RRETD, RRRate, RRStartTerminal, RREndTerminal, TruckEndCity)
 from datetime import date
 
 
@@ -114,3 +116,16 @@ class RRCalculation(models.Model):
     class Meta:
         verbose_name = "Расчёт прямого ЖД"
         verbose_name_plural = "Расчёты прямого ЖД"
+
+
+
+class SeaRRCalculation(models.Model):
+    start_port = models.ForeignKey(StartPort, on_delete=models.CASCADE, related_name='calculations')
+    sea_end_terminal = models.ForeignKey(SeaEndTerminal, on_delete=models.CASCADE, related_name='calculations')
+    rr_end_terminal = models.ForeignKey(RREndTerminal, on_delete=models.CASCADE, related_name='calculations')
+    truck_end_city = models.ForeignKey(TruckEndCity, on_delete=models.CASCADE, related_name='calculations')
+    etd_from = models.DateField('Выход от', blank=True, null=True)
+    etd_to = models.DateField('Выход до', blank=True, null=True)
+    container = models.CharField('Тип КТК', max_length=16, choices=CONTAINER_OPTIONS)
+    gross = models.DecimalField('Брутто', max_digits=20, decimal_places=10)
+    is_VTT = models.BooleanField('ВТТ', default=False)
