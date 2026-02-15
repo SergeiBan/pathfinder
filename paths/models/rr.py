@@ -1,7 +1,6 @@
 from django.db import models
 from django.db.models import Avg, Min
-from . import constants
-
+from . import constants, LocalHubCity
 
 class RRETD(models.Model):
     etd = models.DateField('Дата выхода ЖД')
@@ -65,7 +64,6 @@ class RREndTerminal(models.Model):
         verbose_name_plural = 'ЖД терминалы прибытия'
 
 
-
 class RRRate(models.Model):
     start_terminal = models.ForeignKey(RRStartTerminal, on_delete=models.CASCADE, related_name='rates')
     end_terminal = models.ForeignKey(RREndTerminal, on_delete=models.CASCADE, related_name='rates')
@@ -80,3 +78,17 @@ class RRRate(models.Model):
     class Meta:
         verbose_name = 'ЖД ставка'
         verbose_name_plural = 'ЖД ставки'
+
+
+class InnerRRRate(models.Model):
+    start_terminal = models.ForeignKey(RRStartTerminal, on_delete=models.CASCADE, related_name='inner_rates')
+    end_terminal = models.ForeignKey(RREndTerminal, on_delete=models.CASCADE, related_name='inner_rates')
+    container = models.CharField('Тип КТК', max_length=16, choices=constants.CONTAINER_OPTIONS)
+    rate = models.DecimalField('Стоимость', max_digits=9, decimal_places=2)
+
+    def __str__(self):
+        return str(self.rate)
+    
+    class Meta:
+        verbose_name = 'Внутренняя ЖД ставка'
+        verbose_name_plural = 'Внутренние ЖД ставки'

@@ -21,8 +21,20 @@ FOREIGN_PORTS = (
 )
 
 
+class StartPortCity(models.Model):
+    name = models.CharField('Город отправки судна', max_length=32, unique=True)
+
+    def __str__(self):
+        return self.name
+    
+    class Meta:
+        verbose_name = 'Город отправки судна'
+        verbose_name_plural = 'Города отправки судна'
+
+
 class StartPort(models.Model):
     name = models.CharField('Порт отправки', choices=FOREIGN_PORTS, max_length=32, unique=True)
+    city = models.ForeignKey(StartPortCity, on_delete=models.CASCADE, related_name='ports')
 
     def __str__(self):
         return self.name
@@ -32,8 +44,20 @@ class StartPort(models.Model):
         verbose_name_plural = 'Порты отправки'
 
 
+class LocalHubCity(models.Model):
+    name = models.CharField('Портовый город прибытия', max_length=32, unique=True)
+
+    def __str__(self):
+            return self.name
+    
+    class Meta:
+        verbose_name = 'Портовый город прибытия'
+        verbose_name_plural = 'Портовые города прибытия'
+
+
 class SeaEndTerminal(models.Model):
     name = models.CharField('Морской терминал прибытия', max_length=32, unique=True)
+    local_hub_city = models.ForeignKey(LocalHubCity, on_delete=models.CASCADE, related_name='sea_terminals')
 
     def __str__(self):
         return self.name
