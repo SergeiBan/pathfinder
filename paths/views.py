@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from .forms import SeaCalculationForm, ModalityForm, RRCalculationForm, SeaRRCalculationForm
 from .models import SeaCalculation, SeaRate, InnerRRRate
-from .utils import find_seapath, find_inner_rrpath
+from .utils import find_seapath, find_all_seapaths
 
 
 def index(request):
@@ -57,15 +57,15 @@ def sea_rr_calculation(request):
         
         if 'rr_end_city' in form.cleaned_data:
             pass
-        sea_rates = find_seapath(
-            form.cleaned_data['start_port'],
-            form.cleaned_data['sea_end_terminal'],
+        sea_rates = find_all_seapaths(
+            form.cleaned_data['sea_start_terminal'],
             form.cleaned_data['container'],
             SeaRate,
             form.cleaned_data['etd_from'],
             form.cleaned_data['etd_to']
         )
-        find_inner_rrpath(sea_rates, InnerRRRate, rr_end_terminal=form.cleaned_data['rr_end_terminal'])
+        print(sea_rates)
+        # find_inner_rrpath(sea_rates, InnerRRRate, rr_end_terminal=form.cleaned_data['rr_end_terminal'])
         # print(form.cleaned_data)
 
     context = {

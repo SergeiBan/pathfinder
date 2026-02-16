@@ -21,20 +21,8 @@ FOREIGN_PORTS = (
 )
 
 
-class StartPortCity(models.Model):
-    name = models.CharField('Город отправки судна', max_length=32, unique=True)
-
-    def __str__(self):
-        return self.name
-    
-    class Meta:
-        verbose_name = 'Город отправки судна'
-        verbose_name_plural = 'Города отправки судна'
-
-
-class StartPort(models.Model):
-    name = models.CharField('Порт отправки', choices=FOREIGN_PORTS, max_length=32, unique=True)
-    city = models.ForeignKey(StartPortCity, on_delete=models.CASCADE, related_name='ports')
+class SeaStartTerminal(models.Model):
+    name = models.CharField('Порт отправки', max_length=32, unique=True)
 
     def __str__(self):
         return self.name
@@ -92,7 +80,7 @@ class SeaETD(models.Model):
 
 class SeaRate(models.Model):
     sea_line = models.ForeignKey(SeaLine, on_delete=models.CASCADE, related_name='sea_rates')
-    start_port = models.ForeignKey(StartPort, on_delete=models.CASCADE, related_name='sea_rates')
+    sea_start_terminal = models.ForeignKey(SeaStartTerminal, on_delete=models.CASCADE, related_name='sea_rates')
     sea_end_terminal = models.ForeignKey(SeaEndTerminal, on_delete=models.CASCADE, related_name='sea_rates')
     etd = models.ManyToManyField(SeaETD, related_name='sea_rates')
     validity = models.DateField('Валидность до')

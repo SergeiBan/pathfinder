@@ -6,7 +6,7 @@ class SeaCalculationForm(forms.ModelForm):
     
     class Meta:
         model = SeaCalculation
-        fields = ('start_port', 'sea_end_terminal', 'etd_from', 'etd_to', 'container')
+        fields = ('sea_start_terminal', 'sea_end_terminal', 'etd_from', 'etd_to', 'container')
 
         widgets = {
             'etd_from': forms.DateInput(attrs={'type': 'date'}),
@@ -41,20 +41,15 @@ class ModalityForm(forms.Form):
 
 class SeaRRCalculationForm(forms.ModelForm):
 
-    rr_end_city = forms.ModelChoiceField(
-        queryset=RREndCity.objects.all(),
-        label='Если считаем ЖД до города',
-        required=False
-    )
     rr_end_terminal = forms.ModelChoiceField(
         queryset=RREndTerminal.objects.all(),
-        label='Если считаем ЖД до терминала',
+        label='Если нужен конкретный ЖД терминал',
         required=False
     )
     
     class Meta:
         model = SeaRRCalculation
-        fields = ('start_port', 'sea_end_terminal', 'etd_from', 'etd_to', 'truck_end_city', 'container', 'gross', 'is_VTT')
+        fields = ('sea_start_terminal', 'etd_from', 'etd_to', 'end_city', 'container', 'gross', 'is_VTT')
 
         widgets = {
             'etd_from': forms.DateInput(attrs={'type': 'date'}),

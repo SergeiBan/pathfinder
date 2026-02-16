@@ -1,8 +1,8 @@
 from django.db import models
 from django.db.models import Avg, Min
 from . import (
-    SeaEndTerminal, StartPort, SeaRate, RRStartCity, RREndCity,
-    RRETD, RRRate, RRStartTerminal, RREndTerminal, TruckEndCity)
+    SeaEndTerminal, SeaStartTerminal, SeaRate, RRStartCity, RREndCity,
+    RRETD, RRRate, RRStartTerminal, RREndTerminal, EndCity)
 from datetime import date
 
 
@@ -13,7 +13,7 @@ CONTAINER_OPTIONS = (
 
 
 class SeaCalculation(models.Model):
-    start_port = models.ForeignKey(StartPort, verbose_name='Порт отправки', on_delete=models.CASCADE, related_name='sea_calculations')
+    sea_start_terminal = models.ForeignKey(SeaStartTerminal, verbose_name='Терминал отправки', on_delete=models.CASCADE, related_name='sea_calculations')
     sea_end_terminal = models.ForeignKey(SeaEndTerminal, verbose_name='Терминал прибытия', on_delete=models.CASCADE, related_name='sea_calculations')
     etd_from = models.DateField('Выход от', blank=True, null=True)
     etd_to = models.DateField('Выход до', blank=True, null=True)
@@ -120,10 +120,9 @@ class RRCalculation(models.Model):
 
 
 class SeaRRCalculation(models.Model):
-    start_port = models.ForeignKey(StartPort, on_delete=models.CASCADE, related_name='calculations')
-    sea_end_terminal = models.ForeignKey(SeaEndTerminal, on_delete=models.CASCADE, related_name='calculations')
+    sea_start_terminal = models.ForeignKey(SeaStartTerminal, on_delete=models.CASCADE, related_name='calculations')
     rr_end_terminal = models.ForeignKey(RREndTerminal, on_delete=models.CASCADE, related_name='calculations')
-    truck_end_city = models.ForeignKey(TruckEndCity, on_delete=models.CASCADE, related_name='calculations')
+    end_city = models.ForeignKey(EndCity, on_delete=models.CASCADE, related_name='calculations')
     etd_from = models.DateField('Выход от', blank=True, null=True)
     etd_to = models.DateField('Выход до', blank=True, null=True)
     container = models.CharField('Тип КТК', max_length=16, choices=CONTAINER_OPTIONS)
