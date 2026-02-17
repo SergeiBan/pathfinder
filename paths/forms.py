@@ -1,5 +1,5 @@
 from django import forms
-from .models import SeaCalculation, RRCalculation, SeaRRCalculation, RREndCity, RREndTerminal
+from .models import SeaCalculation, RRCalculation, SeaRRCalculation, RREndTerminal
 
 
 class SeaCalculationForm(forms.ModelForm):

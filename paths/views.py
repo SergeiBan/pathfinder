@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from .forms import SeaCalculationForm, ModalityForm, RRCalculationForm, SeaRRCalculationForm
-from .models import SeaCalculation, SeaRate, InnerRRRate
+from .models import SeaCalculation, SeaRate, InnerRRRate, SeaRRRate
 from .utils import find_seapath, find_all_seapaths
 
 
@@ -51,25 +51,25 @@ def rr_calculation(request):
 
 def sea_rr_calculation(request):
     form = SeaRRCalculationForm(request.POST or None)
-
+    sea_rr_rates = None
     if form.is_valid():
         # form.save()
         
         if 'rr_end_city' in form.cleaned_data:
             pass
-        sea_rates = find_all_seapaths(
-            form.cleaned_data['sea_start_terminal'],
-            form.cleaned_data['container'],
-            SeaRate,
-            form.cleaned_data['etd_from'],
-            form.cleaned_data['etd_to']
-        )
-        print(sea_rates)
-        # find_inner_rrpath(sea_rates, InnerRRRate, rr_end_terminal=form.cleaned_data['rr_end_terminal'])
-        # print(form.cleaned_data)
+
+        elif 'rr_end_terminal' in form.cleaned_data:
+            sea_rr_rates = SeaRRRate.objects.filter(
+                sea_rate__sea_start_terminal=form.cleaned_data['sea_start_terminal'],
+                sea_rate__container=form.cleaned_data['container'],
+                inner_rr_rate__end_terminal=form.cleaned_data['rr_end_terminal'],
+                inner_rr_rate__container=form.cleaned_data['container'],
+            )
+            print(sea_rr_rates)
 
     context = {
-        'form': form
+        'form': form,
+        'rates': sea_rr_rates
     }
 
     return render(request, 'paths/sea_rr_calculation.html', context)

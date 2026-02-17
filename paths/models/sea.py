@@ -33,14 +33,14 @@ class SeaStartTerminal(models.Model):
 
 
 class LocalHubCity(models.Model):
-    name = models.CharField('Портовый город прибытия', max_length=32, unique=True)
+    name = models.CharField('Внутренний транспортный хаб', max_length=32, unique=True)
 
     def __str__(self):
             return self.name
     
     class Meta:
-        verbose_name = 'Портовый город прибытия'
-        verbose_name_plural = 'Портовые города прибытия'
+        verbose_name = 'Внутренний транспортный хаб'
+        verbose_name_plural = 'Внутренние транспортные хабы'
 
 
 class SeaEndTerminal(models.Model):
@@ -88,7 +88,7 @@ class SeaRate(models.Model):
     rate = models.DecimalField('Стоимость', max_digits=9, decimal_places=2)
 
     def __str__(self):
-        return str(self.rate)
+        return f'{self.rate} {self.sea_start_terminal} - {self.sea_end_terminal}'
     
     class Meta:
         verbose_name = 'Морская ставка'

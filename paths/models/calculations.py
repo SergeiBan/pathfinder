@@ -1,8 +1,9 @@
 from django.db import models
 from django.db.models import Avg, Min
 from . import (
-    SeaEndTerminal, SeaStartTerminal, SeaRate, RRStartCity, RREndCity,
-    RRETD, RRRate, RRStartTerminal, RREndTerminal, EndCity)
+    SeaEndTerminal, SeaStartTerminal, SeaRate, ForeignRRStartCity,
+    RRETD, RRRate, ForeignRRStartTerminal, RREndTerminal, EndCity, LocalHubCity
+)
 from datetime import date
 
 
@@ -64,8 +65,8 @@ class SeaCalculation(models.Model):
 
 
 class RRCalculation(models.Model):
-    start_city = models.ForeignKey(RRStartCity, on_delete=models.CASCADE, related_name='rr_calculations')
-    end_city = models.ForeignKey(RREndCity, on_delete=models.CASCADE, related_name='rr_calculations')
+    start_city = models.ForeignKey(ForeignRRStartCity, on_delete=models.CASCADE, related_name='rr_calculations')
+    end_city = models.ForeignKey(LocalHubCity, on_delete=models.CASCADE, related_name='rr_calculations')
     etd_from = models.DateField('Выход от', blank=True, null=True)
     etd_to = models.DateField('Выход до', blank=True, null=True)
     container = models.CharField('Тип КТК', max_length=16, choices=CONTAINER_OPTIONS)
@@ -73,7 +74,7 @@ class RRCalculation(models.Model):
     fastest = models.ForeignKey(RRRate, on_delete=models.CASCADE, related_name='fastest_calculations')
 
     def save(self, *args, **kwargs):
-        relevant_start_terminals = RRStartTerminal.objects.filter(city=self.start_city)
+        relevant_start_terminals = ForeignRRStartTerminal.objects.filter(city=self.start_city)
         relevant_end_terminals = RREndTerminal.objects.filter(city=self.end_city)
         applicable_rates = RRRate.objects.filter(
             start_terminal__in=relevant_start_terminals,
@@ -120,8 +121,8 @@ class RRCalculation(models.Model):
 
 
 class SeaRRCalculation(models.Model):
-    sea_start_terminal = models.ForeignKey(SeaStartTerminal, on_delete=models.CASCADE, related_name='calculations')
-    rr_end_terminal = models.ForeignKey(RREndTerminal, on_delete=models.CASCADE, related_name='calculations')
+    sea_start_terminal = models.ForeignKey(SeaStartTerminal, verbose_name='Морской терминал отправки', on_delete=models.CASCADE, related_name='calculations')
+    rr_end_terminal = models.ForeignKey(RREndTerminal, verbose_name='ЖД терминал прибытия', on_delete=models.CASCADE, related_name='calculations')
     end_city = models.ForeignKey(EndCity, on_delete=models.CASCADE, related_name='calculations')
     etd_from = models.DateField('Выход от', blank=True, null=True)
     etd_to = models.DateField('Выход до', blank=True, null=True)

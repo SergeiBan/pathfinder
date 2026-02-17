@@ -4,6 +4,12 @@
 {% block content %}
 <main class="row">
     <div class="col-md-6 mx-auto">
+        <div class="mb-5">
+            {% for rate in rates %}
+                ${{ rate.sea_rate.rate }} до {{ rate.sea_rate.sea_end_terminal }} + <br>
+                {{ rate.inner_rr_rate.rate }}₽ {{ rate.inner_rr_rate.start_terminal }} - {{ rate.inner_rr_rate.end_terminal }}
+            {% endfor %}
+        </div>
         <form method="POST">
             {% csrf_token %}
             {% bootstrap_form form %}

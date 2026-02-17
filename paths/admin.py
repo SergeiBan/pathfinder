@@ -3,8 +3,8 @@ from .models import (
     SeaStartTerminal, SeaEndTerminal, SeaCalculation, SeaRRCalculation,
     SeaLine, SeaRate, SeaETD, LocalHubCity,
 
-    RRStartTerminal, RREndTerminal, RRETD, RRRate, InnerRRRate,
-    RRStartCity, RREndCity,
+    ForeignRRStartTerminal, RREndTerminal, RRETD, RRRate, InnerRRRate,
+    ForeignRRStartCity, InnerRRStartTerminal, SeaRRRate,
 
     EndCity
 )
@@ -18,14 +18,18 @@ admin.site.register(SeaLine)
 admin.site.register(SeaRate)
 admin.site.register(SeaETD)
 
-admin.site.register(RRStartTerminal)
+admin.site.register(ForeignRRStartTerminal)
+admin.site.register(InnerRRStartTerminal)
 admin.site.register(RREndTerminal)
 admin.site.register(RRETD)
 admin.site.register(RRRate)
 admin.site.register(InnerRRRate)
-admin.site.register(RRStartCity)
-admin.site.register(RREndCity)
+admin.site.register(ForeignRRStartCity)
 
 admin.site.register(SeaRRCalculation)
+admin.site.register(SeaRRRate)
+
 
 admin.site.register(EndCity)
+
+
