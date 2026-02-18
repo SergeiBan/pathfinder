@@ -6,7 +6,6 @@ from . import SeaStartTerminal, SeaEndTerminal, LocalHubCity, SeaRate, InnerRRRa
 
 class EndCity(models.Model):
     name = models.CharField('Город назначения', max_length=32, unique=True)
-    local_hub_city = models.ForeignKey(LocalHubCity, on_delete=models.CASCADE, related_name='end_cities')
     rate = models.DecimalField('Стоимость автовывоза', max_digits=9, decimal_places=2)
 
     def __str__(self):

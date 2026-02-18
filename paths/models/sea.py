@@ -34,6 +34,8 @@ class SeaStartTerminal(models.Model):
 
 class LocalHubCity(models.Model):
     name = models.CharField('Внутренний транспортный хаб', max_length=32, unique=True)
+    truck_delivery_point = models.ManyToManyField('EndCity', related_name='local_hub_cities', blank=True, null=True)
+
 
     def __str__(self):
             return self.name
