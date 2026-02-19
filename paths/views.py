@@ -65,6 +65,8 @@ def sea_rr_calculation(request):
                 inner_rr_rate__end_terminal=form.cleaned_data['rr_end_terminal'],
                 inner_rr_rate__container=form.cleaned_data['container'],
             )
+
+        
         
         sea_rates = SeaRate.objects.filter(
             sea_start_terminal=form.cleaned_data['sea_start_terminal'],
@@ -75,7 +77,19 @@ def sea_rr_calculation(request):
             container=form.cleaned_data['container']
         ).distinct()
 
-        is_port_city = form.cleaned_data['rr_end_terminal'].city.sea_terminals.exists()
+
+        direct_sea_rates = None
+        city = form.cleaned_data['rr_end_terminal'].city
+        is_port_city = city.sea_terminals.exists()
+        if is_port_city:
+            end_terminals = city.sea_terminals.all()
+            direct_sea_rates = SeaRate.objects.filter(
+                sea_start_terminal=form.cleaned_data['sea_start_terminal'],
+                sea_end_terminal__in=end_terminals
+            )
+            print(direct_sea_rates)
+
+
         sea_to_rr = []
         for sea_rate in sea_rates:
             for rr_rate in rr_rates:
@@ -86,7 +100,8 @@ def sea_rr_calculation(request):
 
     context = {
         'form': form,
-        'rates': sea_rr_rates
+        'rates': sea_rr_rates,
+        'direct_sea_rates': direct_sea_rates
     }
 
     return render(request, 'paths/sea_rr_calculation.html', context)
