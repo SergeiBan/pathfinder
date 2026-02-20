@@ -55,16 +55,16 @@ class LocalTruck(models.Model):
         verbose_name_plural = 'Автовывозы внутри городов'
 
 
-# class DistantTruckRate(models.Model):
-#     start_cities = models.ManyToManyField(LocalHubCity, related_name='outgoing_truck_rates', verbose_name='Города отправки автовывоза')
-#     end_cities = models.ManyToManyField(LocalHubCity, related_name='ingoing_truck_rates', verbose_name='Города прибытия автовывоза')
-#     price = models.DecimalField('Цена автовывоза между городами', max_digits=9, decimal_places=2)
+class DistantTruckRate(models.Model):
+    start_cities = models.ManyToManyField(LocalHubCity, related_name='outgoing_truck_rates', verbose_name='Города отправки автовывоза')
+    end_cities = models.ManyToManyField(LocalHubCity, related_name='ingoing_truck_rates', verbose_name='Города прибытия автовывоза')
+    price = models.DecimalField('Цена автовывоза между городами', max_digits=9, decimal_places=2)
 
-#     def delivery_titles(self):
-#         return ', '.join([sc for sc in self.start_cities.all()])
+    # def delivery_titles(self):
+    #     return ', '.join([sc for sc in self.start_cities.all()])
 
-#     def __str__(self):
-#         return f'{self.price} - {self.start_cities} - {self.end_cities}'
+    # def __str__(self):
+    #     return f'{self.price} - {self.start_cities} - {self.end_cities}'
     
     class Meta:
         verbose_name = 'Автовывоз между городами'
