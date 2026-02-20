@@ -66,7 +66,7 @@ def sea_rr_calculation(request):
                 inner_rr_rate__end_terminal=form.cleaned_data['rr_end_terminal'],
                 inner_rr_rate__container=form.cleaned_data['container'],
             )
-
+        
         sea_rates = SeaRate.objects.filter(
             sea_start_terminal=form.cleaned_data['sea_start_terminal'],
             container=form.cleaned_data['container']
@@ -74,7 +74,7 @@ def sea_rr_calculation(request):
         rr_rates = InnerRRRate.objects.filter(
             end_terminal=form.cleaned_data['rr_end_terminal'],
             container=form.cleaned_data['container']
-        ).distinct().annotate(truck_price=F('end_terminal__city__local_truck_delivery_price'))
+        ).distinct().annotate(truck=F('end_terminal__city__local_truck__price'))
 
         direct_sea_rates = None
         city = form.cleaned_data['rr_end_terminal'].city
@@ -84,9 +84,9 @@ def sea_rr_calculation(request):
             direct_sea_rates = SeaRate.objects.filter(
                 sea_start_terminal=form.cleaned_data['sea_start_terminal'],
                 sea_end_terminal__in=end_terminals
-            ).annotate(truck_price=F('sea_end_terminal__local_hub_city__local_truck_delivery_price'))
+            ).annotate(truck=F('sea_end_terminal__local_hub_city__local_truck__price'))
 
-
+        # Мультимодальная ставка составляется из морской и ЖД ставок
         sea_to_rr = []
         for sea_rate in sea_rates:
             for rr_rate in rr_rates:

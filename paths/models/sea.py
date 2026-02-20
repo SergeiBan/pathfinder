@@ -34,8 +34,6 @@ class SeaStartTerminal(models.Model):
 
 class LocalHubCity(models.Model):
     name = models.CharField('Внутренний транспортный хаб', max_length=32, unique=True)
-    truck_delivery_point = models.ManyToManyField('EndCity', related_name='local_hub_cities', blank=True, null=True)
-    local_truck_delivery_price = models.DecimalField('Цена автовывоза по городу', max_digits=9, decimal_places=2)
 
     def __str__(self):
             return self.name
@@ -43,6 +41,34 @@ class LocalHubCity(models.Model):
     class Meta:
         verbose_name = 'Внутренний транспортный хаб'
         verbose_name_plural = 'Внутренние транспортные хабы'
+
+
+class LocalTruck(models.Model):
+    city = models.OneToOneField(LocalHubCity, on_delete=models.CASCADE, related_name='local_truck', verbose_name='Город локального автовывоза')
+    price = models.DecimalField('Цена автовывоза по городу', max_digits=9, decimal_places=2)
+
+    def __str__(self):
+            return f'{self.price} - {self.city}'
+    
+    class Meta:
+        verbose_name = 'Автовывоз внутри города'
+        verbose_name_plural = 'Автовывозы внутри городов'
+
+
+# class DistantTruckRate(models.Model):
+#     start_cities = models.ManyToManyField(LocalHubCity, related_name='outgoing_truck_rates', verbose_name='Города отправки автовывоза')
+#     end_cities = models.ManyToManyField(LocalHubCity, related_name='ingoing_truck_rates', verbose_name='Города прибытия автовывоза')
+#     price = models.DecimalField('Цена автовывоза между городами', max_digits=9, decimal_places=2)
+
+#     def delivery_titles(self):
+#         return ', '.join([sc for sc in self.start_cities.all()])
+
+#     def __str__(self):
+#         return f'{self.price} - {self.start_cities} - {self.end_cities}'
+    
+    class Meta:
+        verbose_name = 'Автовывоз между городами'
+        verbose_name_plural = 'Автовывозы между городами'
 
 
 class SeaEndTerminal(models.Model):

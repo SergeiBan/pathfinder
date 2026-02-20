@@ -1,4 +1,6 @@
-from .sea import SeaStartTerminal, SeaEndTerminal, SeaLine, SeaRate, SeaETD, LocalHubCity
+from .sea import (
+    SeaStartTerminal, SeaEndTerminal, SeaLine, SeaRate, SeaETD, LocalHubCity, LocalTruck, DistantTruckRate
+)
 from .rr import (
     ForeignRRStartTerminal, RREndTerminal, RRETD, RRRate, ForeignRRStartCity, InnerRRRate, InnerRRStartTerminal
 )
