@@ -4,35 +4,24 @@
 {% block content %}
 <main class="row">
     <div class="col-md-6 mx-auto">
-        <div class="mb-5">
-            {% for rate in rates %}
-                ${{ rate.sea_rate.rate }} до {{ rate.sea_rate.sea_end_terminal }} + <br>
-                {{ rate.inner_rr_rate.rate }}₽ {{ rate.inner_rr_rate.start_terminal }} - {{ rate.inner_rr_rate.end_terminal }}
-            {% endfor %}
-        </div>
+        {% if form.is_valid %}
+            <div class="mb-2">
+                <p class="h3">Прямое море<p>
+                {% for rate in direct_sea_rates %}{{ rate }} + автовывоз {{ rate.truck_price }} ₽{% endfor %}
+            </div>
+            <div class="mb-2">
+                <p class="h3">Море + ЖД</p>
+                {% for rate in rates %}
+                    {{ rate.0 }} + {{ rate.1 }} + автовывоз {{ rate.1.truck_price }} ₽
+                {% endfor %}
+            </div>
+        {% endif %}
+        
         <form method="POST">
             {% csrf_token %}
             {% bootstrap_form form %}
             {% bootstrap_button button_type="submit" content="Посчитать" button_class="btn-info w-100" %}
         </form>
-
-        {% if form.is_valid %}
-            <p>Самый дешевый вариант: 
-                {% for etd in form.instance.cheapest.etd.all %}
-                    {{ etd }}
-                {% endfor %}
-                ${{ form.instance.cheapest.rate }}
-                {{ form.instance.cheapest.sea_line }}
-            </p>
-
-            <p>Самый быстрый вариант: 
-                {% for etd in form.instance.fastest.etd.all %}
-                    {{ etd }}
-                {% endfor %}
-                ${{ form.instance.fastest.rate }}
-                {{ form.instance.fastest.sea_line }}
-            </p>
-        {% endif %}
     </div>
 </main>
 {% endblock content %}

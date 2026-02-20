@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from .forms import SeaCalculationForm, ModalityForm, RRCalculationForm, SeaRRCalculationForm
 from .models import SeaCalculation, SeaRate, InnerRRRate, SeaRRRate, LocalHubCity, SeaEndTerminal
 from .utils import find_seapath, find_all_seapaths
+from django.db.models import F
 
 
 def index(request):
@@ -66,8 +67,6 @@ def sea_rr_calculation(request):
                 inner_rr_rate__container=form.cleaned_data['container'],
             )
 
-        
-        
         sea_rates = SeaRate.objects.filter(
             sea_start_terminal=form.cleaned_data['sea_start_terminal'],
             container=form.cleaned_data['container']
@@ -75,8 +74,7 @@ def sea_rr_calculation(request):
         rr_rates = InnerRRRate.objects.filter(
             end_terminal=form.cleaned_data['rr_end_terminal'],
             container=form.cleaned_data['container']
-        ).distinct()
-
+        ).distinct().annotate(truck_price=F('end_terminal__city__local_truck_delivery_price'))
 
         direct_sea_rates = None
         city = form.cleaned_data['rr_end_terminal'].city
@@ -86,8 +84,7 @@ def sea_rr_calculation(request):
             direct_sea_rates = SeaRate.objects.filter(
                 sea_start_terminal=form.cleaned_data['sea_start_terminal'],
                 sea_end_terminal__in=end_terminals
-            )
-            print(direct_sea_rates)
+            ).annotate(truck_price=F('sea_end_terminal__local_hub_city__local_truck_delivery_price'))
 
 
         sea_to_rr = []
@@ -95,12 +92,10 @@ def sea_rr_calculation(request):
             for rr_rate in rr_rates:
                 if sea_rate.sea_end_terminal.local_hub_city == rr_rate.start_terminal.city:
                     sea_to_rr.append([sea_rate, rr_rate])
-        print(is_port_city)
-        
 
     context = {
         'form': form,
-        'rates': sea_rr_rates,
+        'rates': sea_to_rr,
         'direct_sea_rates': direct_sea_rates
     }
 

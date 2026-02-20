@@ -88,7 +88,7 @@ class InnerRRRate(models.Model):
     rate = models.DecimalField('Стоимость', max_digits=9, decimal_places=2)
 
     def __str__(self):
-        return f'{self.rate} {self.start_terminal} - {self.end_terminal}'
+        return f'{self.rate} ₽ {self.start_terminal} - {self.end_terminal}'
     
     class Meta:
         verbose_name = 'Внутренняя ЖД ставка'
