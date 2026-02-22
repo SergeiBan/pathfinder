@@ -2,7 +2,7 @@ from django.db import models
 from django.db.models import Avg, Min
 from . import (
     SeaEndTerminal, SeaStartTerminal, SeaRate, ForeignRRStartCity,
-    RRETD, RRRate, ForeignRRStartTerminal, RREndTerminal, LocalHubCity
+    RRETD, RRRate, ForeignRRStartTerminal, InnerRRTerminal, LocalHubCity
 )
 from datetime import date
 
@@ -122,7 +122,7 @@ class RRCalculation(models.Model):
 
 class SeaRRCalculation(models.Model):
     sea_start_terminal = models.ForeignKey(SeaStartTerminal, verbose_name='Морской терминал отправки', on_delete=models.CASCADE, related_name='calculations')
-    rr_end_terminal = models.ForeignKey(RREndTerminal, verbose_name='ЖД терминал прибытия', on_delete=models.CASCADE, related_name='calculations')
+    rr_end_terminal = models.ForeignKey(InnerRRTerminal, verbose_name='ЖД терминал прибытия', on_delete=models.CASCADE, related_name='calculations')
     end_city = models.ForeignKey(LocalHubCity, on_delete=models.CASCADE, related_name='calculations')
     etd_from = models.DateField('Выход от', blank=True, null=True)
     etd_to = models.DateField('Выход до', blank=True, null=True)

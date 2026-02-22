@@ -14,8 +14,6 @@ class RRETD(models.Model):
         verbose_name_plural = 'Даты выхода ЖД'
 
 
-
-
 class ForeignRRStartCity(models.Model):
     name = models.CharField('Зарубежный город ЖД отправки', max_length=32, unique=True)
 
@@ -40,35 +38,22 @@ class ForeignRRStartTerminal(models.Model):
         verbose_name_plural = 'ЖД терминалы отправки'
 
 
-class InnerRRStartTerminal(models.Model):
-    name = models.CharField('Внутренний ЖД терминал отправки', max_length=32, unique=True)
-    city = models.ForeignKey(LocalHubCity, verbose_name='Город ЖД отправки', on_delete=models.CASCADE, related_name='start_terminals')
+class InnerRRTerminal(models.Model):
+    name = models.CharField('Внутренний ЖД терминал', max_length=32, unique=True)
+    city = models.ForeignKey(LocalHubCity, verbose_name='Город ЖД терминала', on_delete=models.CASCADE, related_name='rr_terminals')
 
     def __str__(self):
         return self.name
     
     class Meta:
-        verbose_name = 'Внутренний ЖД терминал отправки'
-        verbose_name_plural = 'Внутренние ЖД терминалы отправки'
-
-
-
-class RREndTerminal(models.Model):
-    name = models.CharField('ЖД терминал прибытия', max_length=32, unique=True)
-    city = models.ForeignKey(LocalHubCity, verbose_name='Город ЖД прибытия', on_delete=models.CASCADE, related_name='end_terminals')
-
-    def __str__(self):
-        return self.name
-    
-    class Meta:
-        verbose_name = 'ЖД терминал прибытия'
-        verbose_name_plural = 'ЖД терминалы прибытия'
+        verbose_name = 'Внутренний ЖД терминал'
+        verbose_name_plural = 'Внутренние ЖД терминалы'
 
 
 class RRRate(models.Model):
-    start_terminal = models.ForeignKey(ForeignRRStartTerminal, on_delete=models.CASCADE, related_name='rates')
-    end_terminal = models.ForeignKey(RREndTerminal, on_delete=models.CASCADE, related_name='rates')
-    etd = models.ManyToManyField(RRETD, related_name='rates')
+    start_terminal = models.ForeignKey(ForeignRRStartTerminal, on_delete=models.CASCADE, related_name='direct_rr_rates')
+    end_terminal = models.ForeignKey(InnerRRTerminal, on_delete=models.CASCADE, related_name='direct_rr_rates')
+    etd = models.ManyToManyField(RRETD, related_name='direct_rr_rates')
     validity = models.DateField('Валидность до')
     container = models.CharField('Тип КТК', max_length=16, choices=constants.CONTAINER_OPTIONS)
     rate = models.DecimalField('Стоимость', max_digits=9, decimal_places=2)
@@ -82,8 +67,8 @@ class RRRate(models.Model):
 
 
 class InnerRRRate(models.Model):
-    start_terminal = models.ForeignKey(InnerRRStartTerminal, on_delete=models.CASCADE, related_name='inner_rates')
-    end_terminal = models.ForeignKey(RREndTerminal, on_delete=models.CASCADE, related_name='inner_rates')
+    start_terminal = models.ForeignKey(InnerRRTerminal, on_delete=models.CASCADE, related_name='inner_rates_outgoing')
+    end_terminal = models.ForeignKey(InnerRRTerminal, on_delete=models.CASCADE, related_name='inner_rates_incoming')
     container = models.CharField('Тип КТК', max_length=16, choices=constants.CONTAINER_OPTIONS)
     rate = models.DecimalField('Стоимость', max_digits=9, decimal_places=2)
 

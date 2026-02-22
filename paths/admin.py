@@ -3,8 +3,8 @@ from .models import (
     SeaStartTerminal, SeaEndTerminal, SeaCalculation, SeaRRCalculation,
     SeaLine, SeaRate, SeaETD, LocalHubCity, LocalTruck, DistantTruckRate,
 
-    ForeignRRStartTerminal, RREndTerminal, RRETD, RRRate, InnerRRRate,
-    ForeignRRStartCity, InnerRRStartTerminal, SeaRRRate,
+    ForeignRRStartTerminal, InnerRRTerminal, RRETD, RRRate, InnerRRRate,
+    ForeignRRStartCity,
 
 )
 
@@ -21,15 +21,13 @@ admin.site.register(SeaRate)
 admin.site.register(SeaETD)
 
 admin.site.register(ForeignRRStartTerminal)
-admin.site.register(InnerRRStartTerminal)
-admin.site.register(RREndTerminal)
+admin.site.register(InnerRRTerminal)
 admin.site.register(RRETD)
 admin.site.register(RRRate)
 admin.site.register(InnerRRRate)
 admin.site.register(ForeignRRStartCity)
 
 admin.site.register(SeaRRCalculation)
-admin.site.register(SeaRRRate)
 
 
 

@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from .forms import SeaCalculationForm, ModalityForm, RRCalculationForm, SeaRRCalculationForm
-from .models import SeaCalculation, SeaRate, InnerRRRate, SeaRRRate, LocalHubCity, SeaEndTerminal, RREndTerminal
+from .models import SeaCalculation, SeaRate, InnerRRRate, LocalHubCity, SeaEndTerminal, InnerRRTerminal
 from .utils import find_seapath, find_all_seapaths
 from django.db.models import F
 
@@ -58,12 +58,14 @@ def sea_rr_calculation(request):
     
     sea_to_rr = []
     if form.is_valid():
-        print(form.cleaned_data['end_city'])
+        end_city = form.cleaned_data['end_city']
+        particular_rr_terminal = form.cleaned_data['rr_end_terminal']
         
-        if 'rr_end_terminal' in form.cleaned_data:
-            end_terminals = RREndTerminal.objects.filter(pk=form.cleaned_data['rr_end_terminal'].pk)
+        if particular_rr_terminal:
+            # if form.cleaned_data['rr_end_terminal'] in end_city.rr_terminals.all():
+            end_terminals = InnerRRTerminal.objects.filter(pk=form.cleaned_data['rr_end_terminal'].pk)
         else:
-            end_terminals = form.cleaned_data['end_city'].end_terminals.all()
+            end_terminals = end_city.rr_terminals.all()
         
         sea_rates = SeaRate.objects.filter(
             sea_start_terminal=form.cleaned_data['sea_start_terminal'],
@@ -74,10 +76,10 @@ def sea_rr_calculation(request):
             container=form.cleaned_data['container']
         ).distinct().annotate(truck=F('end_terminal__city__local_truck__price'))
 
-        city = form.cleaned_data['rr_end_terminal'].city
-        is_port_city = city.sea_terminals.exists()
+        # Проверям, что пункт назначения - портовый город и получаем прямые морские ставки
+        is_port_city = end_city.sea_terminals.exists()
         if is_port_city:
-            end_terminals = city.sea_terminals.all()
+            end_terminals = end_city.sea_terminals.all()
             direct_sea_rates = SeaRate.objects.filter(
                 sea_start_terminal=form.cleaned_data['sea_start_terminal'],
                 sea_end_terminal__in=end_terminals

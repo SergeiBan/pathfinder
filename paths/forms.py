@@ -1,5 +1,5 @@
 from django import forms
-from .models import SeaCalculation, RRCalculation, SeaRRCalculation, RREndTerminal
+from .models import SeaCalculation, RRCalculation, SeaRRCalculation, InnerRRTerminal
 
 
 class SeaCalculationForm(forms.ModelForm):
@@ -42,7 +42,7 @@ class ModalityForm(forms.Form):
 class SeaRRCalculationForm(forms.ModelForm):
 
     rr_end_terminal = forms.ModelChoiceField(
-        queryset=RREndTerminal.objects.all(),
+        queryset=InnerRRTerminal.objects.all(),
         label='Если нужен конкретный ЖД терминал',
         required=False
     )
@@ -55,3 +55,12 @@ class SeaRRCalculationForm(forms.ModelForm):
             'etd_from': forms.DateInput(attrs={'type': 'date'}),
             'etd_to': forms.DateInput(attrs={'type': 'date'}),
         }
+
+    def clean(self):
+        cleaned_data = super().clean()
+        rr_end_terminal = cleaned_data.get("rr_end_terminal")
+        end_city = cleaned_data.get("end_city")
+
+        if rr_end_terminal and rr_end_terminal not in end_city.rr_terminals.all():
+            raise forms.ValidationError("Выбранный ЖД терминал не относится к выбранному городу")
+        return cleaned_data
