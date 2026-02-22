@@ -6,7 +6,6 @@ from .models import (
     ForeignRRStartTerminal, RREndTerminal, RRETD, RRRate, InnerRRRate,
     ForeignRRStartCity, InnerRRStartTerminal, SeaRRRate,
 
-    EndCity
 )
 
 
@@ -32,7 +31,5 @@ admin.site.register(ForeignRRStartCity)
 admin.site.register(SeaRRCalculation)
 admin.site.register(SeaRRRate)
 
-
-admin.site.register(EndCity)
 
 

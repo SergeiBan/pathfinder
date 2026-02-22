@@ -4,7 +4,7 @@ from .sea import (
 from .rr import (
     ForeignRRStartTerminal, RREndTerminal, RRETD, RRRate, ForeignRRStartCity, InnerRRRate, InnerRRStartTerminal
 )
-from .sea_rr import EndCity, SeaRRRate
+from .sea_rr import SeaRRRate
 
 from .calculations import SeaCalculation, RRCalculation, SeaRRCalculation
 
