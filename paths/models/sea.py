@@ -61,7 +61,7 @@ class DistantTruckRate(models.Model):
     price = models.DecimalField('Цена автовывоза между городами', max_digits=9, decimal_places=2)
 
     def __str__(self):
-        return f'{self.start_city} ₽ {self.end_city} - {self.price}'
+        return f'автовывоз {self.price} ₽: {self.start_city} - {self.end_city}'
     
     class Meta:
         verbose_name = 'Автовывоз между городами'

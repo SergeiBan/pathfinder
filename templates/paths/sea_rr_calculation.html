@@ -5,18 +5,40 @@
 <main class="row">
     <div class="col-md-6 mx-auto">
         {% if form.is_valid %}
+
         {% if direct_sea_rates %}
-            <div class="mb-2">
-                <p class="h3">Прямое море<p>
-                <div>{% for rate in direct_sea_rates %}{{ rate }} + автовывоз {{ rate.truck }} ₽{% endfor %}</div>
+            <div class="card mb-2">
+                <div class="card-body">
+                    <h5 class="card-title text-success">Прямое море</h5>
+                    <p class="card-text"><ul>{% for rate in direct_sea_rates %}<li>{{ rate }} + автовывоз {{ rate.truck }} ₽{% endfor %}</li></ul></p>
+                </div>
             </div>
         {% endif %}
-            <div class="mb-2">
-                <p class="h3">Море + ЖД</p>
-                {% for rate in rates %}
-                    <div>{{ rate.0 }} + {{ rate.1 }} + автовывоз {{ rate.1.truck }} ₽</div>
-                {% endfor %}
+
+        {% if sea_rr_truck %}
+            <div class="card mb-2">
+                <div class="card-body">
+                    <h5 class="card-title text-success">Море + ЖД</h5>
+                    <p class="card-text"><ul>
+                        {% for rate in rates %}
+                            <li>{{ rate.0 }} + {{ rate.1 }} + автовывоз {{ rate.1.truck }} ₽</li>
+                        {% endfor %}
+                    </ul></p>
+                </div>
             </div>
+        {% endif %}
+
+        {% if rates %}
+            <div class="card mb-2">
+                <div class="card-body">
+                    <h5 class="card-title text-success">Море + ЖД с автовывозом в другой город</h5>
+                    <p class="card-text"><ul>
+                        {% for rate in sea_rr_truck %}<li>{{ rate.0 }} + {{ rate.1 }} + {{ rate.2 }}</li>{% endfor %}
+                    </ul></p>
+                </div>
+            </div>
+        {% endif %}
+            
         {% endif %}
         
         <form method="POST">
