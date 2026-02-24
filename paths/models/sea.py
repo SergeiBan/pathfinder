@@ -110,7 +110,7 @@ class SeaRate(models.Model):
     etd = models.ManyToManyField(SeaETD, related_name='sea_rates')
     validity = models.DateField('Валидность до')
     container = models.CharField('Тип КТК', max_length=16, choices=constants.CONTAINER_OPTIONS)
-    rate = models.DecimalField('Стоимость', max_digits=9, decimal_places=2)
+    rate = models.DecimalField('Стоимость, $', max_digits=9, decimal_places=2)
 
     def __str__(self):
         return f'${self.rate} {self.sea_line} {self.sea_start_terminal} - {self.sea_end_terminal}'

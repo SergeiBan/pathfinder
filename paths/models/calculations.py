@@ -129,3 +129,7 @@ class SeaRRCalculation(models.Model):
     container = models.CharField('Тип КТК', max_length=16, choices=CONTAINER_OPTIONS)
     gross = models.DecimalField('Брутто', max_digits=20, decimal_places=10)
     is_VTT = models.BooleanField('ВТТ', default=False)
+
+
+class FileUpload(models.Model):
+    

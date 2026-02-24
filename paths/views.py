@@ -60,6 +60,7 @@ def sea_rr_calculation(request):
     end_terminals = None
     remote_truck_rates = None
     sea_rr_truck = []
+    sea_truck = []
     
     sea_to_rr = []
     if form.is_valid():
@@ -104,6 +105,12 @@ def sea_rr_calculation(request):
                 for rr_truck in rr_plus_truck_rates:
                     if sea_rate.sea_end_terminal.local_hub_city == rr_truck[0].start_terminal.city:
                         sea_rr_truck.append([sea_rate, rr_truck[0], rr_truck[1]])
+            
+            # Сопоставляем морские ставки и ставки автовывоза по городу
+            for sea_rate in sea_rates:
+                for truck_rate in remote_truck_rates:
+                    if sea_rate.sea_end_terminal.local_hub_city == truck_rate.start_city:
+                        sea_truck.append([sea_rate, truck_rate])
 
         # Проверям, что пункт назначения - портовый город и получаем прямые морские ставки
         is_port_city = end_city.sea_terminals.exists()
@@ -125,7 +132,8 @@ def sea_rr_calculation(request):
         'form': form,
         'rates': sea_to_rr,
         'direct_sea_rates': direct_sea_rates,
-        'sea_rr_truck': sea_rr_truck
+        'sea_rr_truck': sea_rr_truck,
+        'sea_truck': sea_truck
     }
 
     return render(request, 'paths/sea_rr_calculation.html', context)

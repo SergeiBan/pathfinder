@@ -15,6 +15,15 @@
             </div>
         {% endif %}
 
+        {% if sea_truck %}
+            <div class="card mb-2">
+                <div class="card-body">
+                    <h5 class="card-title text-success">Прямое море с автовывозом в другой город</h5>
+                    <p class="card-text"><ul>{% for rate in sea_truck %}<li>{{ rate.0 }} + {{ rate.1 }}{% endfor %}</li></ul></p>
+                </div>
+            </div>
+        {% endif %}
+
         {% if rates %}
             <div class="card mb-2">
                 <div class="card-body">
