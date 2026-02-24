@@ -131,5 +131,5 @@ class SeaRRCalculation(models.Model):
     is_VTT = models.BooleanField('ВТТ', default=False)
 
 
-class FileUpload(models.Model):
+# class FileUpload(models.Model):
     
