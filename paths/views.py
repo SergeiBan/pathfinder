@@ -1,30 +1,18 @@
 from django.shortcuts import render, redirect
-from .forms import SeaCalculationForm, ModalityForm, RRCalculationForm, SeaRRCalculationForm
+from .forms import SeaCalculationForm, RRCalculationForm, SeaRRCalculationForm, UploadForm
 from .models import (
     SeaCalculation, SeaRate, InnerRRRate, LocalHubCity, SeaEndTerminal, InnerRRTerminal,
     DistantTruckRate
 )
 from .utils import find_seapath, find_all_seapaths
 from django.db.models import F
+from django.http import Http404
+from django.contrib.auth.decorators import permission_required
+import pandas as pd
 
 
 def index(request):
-    form = ModalityForm(request.GET or None)
-
-    if form.is_valid():
-        print(form.cleaned_data)
-        if form.cleaned_data['modality'] == 'sea':
-            return redirect('paths:sea_calculation')
-        elif form.cleaned_data['modality'] == 'rr':
-            return redirect('paths:rr_calculation')
-        elif form.cleaned_data['modality'] == 'sea_rr':
-            return redirect('paths:sea_rr_calculation')
-
-    context = {
-        'form': form
-    }
-
-    return render(request, 'paths/index.html', context)
+    return redirect('paths:sea_rr_calculation')
 
 
 def sea_calculation(request):
@@ -137,3 +125,27 @@ def sea_rr_calculation(request):
     }
 
     return render(request, 'paths/sea_rr_calculation.html', context)
+
+
+@permission_required('paths.add_fileupload')
+def file_upload(request):
+        
+    if request.method == 'POST':
+        form = UploadForm(request.POST, request.FILES)
+        if form.is_valid():
+            uploaded_file = request.FILES['uploaded_file']
+            all_sheets = pd.read_excel(uploaded_file, sheet_name=None)
+            for sheet_name, df in all_sheets.items():
+                
+                if sheet_name == 'Shanghai':
+                    
+                    for row in df.itertuples(index=False):
+                        print(row, '\n')
+
+            return redirect('paths:sea_rr_calculation')
+    else:
+        form = UploadForm()
+    
+    context = {'form': form}
+    
+    return render(request, 'paths/upload.html', context)

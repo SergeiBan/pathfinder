@@ -5,5 +5,5 @@ from .rr import (
     ForeignRRStartTerminal, RRETD, RRRate, ForeignRRStartCity, InnerRRRate, InnerRRTerminal
 )
 
-from .calculations import SeaCalculation, RRCalculation, SeaRRCalculation
+from .calculations import SeaCalculation, RRCalculation, SeaRRCalculation, FileUpload
 

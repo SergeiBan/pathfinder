@@ -132,5 +132,5 @@ class SeaRRCalculation(models.Model):
 
 
 class FileUpload(models.Model):
-    uploaded_file = models.FileField(upload_to='uploads/')
+    uploaded_file = models.FileField(verbose_name='Файл со ставками', upload_to='uploads/')
     uploaded_at = models.DateTimeField(auto_now_add=True)

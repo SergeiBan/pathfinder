@@ -106,3 +106,4 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static_production')
 AUTH_USER_MODEL = 'users.CustomUser'
 
 LOGIN_REDIRECT_URL = 'paths:index'
+LOGIN_URL = 'login'

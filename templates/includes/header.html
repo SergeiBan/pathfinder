@@ -14,7 +14,11 @@
                 <a class="nav-link" href="#">Прямое авиа</a>
                 
                 {% if user.is_authenticated %}
-                <form method="post" action="{% url 'logout' %}" style="display:inline;">
+
+                {% if perms.paths.add_fileupload %}
+                    <a class="nav-link {% if view_name == 'paths:upload' %} text-info {% endif %}" href="{% url 'paths:upload' %}">Загрузить ставки</a>
+                {% endif %}
+                    <form method="post" action="{% url 'logout' %}" style="display:inline;">
                   {% csrf_token %}
                   <button type="submit" class="nav-link btn btn-link">
                       Выйти

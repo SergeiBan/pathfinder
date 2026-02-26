@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% load django_bootstrap5 %}
+
+{% block content %}
+<main class="row">
+    <div class="col-md-6 mx-auto">
+        <p class="display-6 mb-5">Загрузите файл, пожалуйста</p>
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            {% bootstrap_form form %}
+            {% bootstrap_button button_type="submit" content="Отправить" button_class="btn-info w-100" %}
+        </form>
+    </div>
+</main>
+{% endblock content %}

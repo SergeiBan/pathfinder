@@ -1,5 +1,5 @@
 from django import forms
-from .models import SeaCalculation, RRCalculation, SeaRRCalculation, InnerRRTerminal
+from .models import SeaCalculation, RRCalculation, SeaRRCalculation, InnerRRTerminal, FileUpload
 
 
 class SeaCalculationForm(forms.ModelForm):
@@ -24,19 +24,6 @@ class RRCalculationForm(forms.ModelForm):
             'etd_from': forms.DateInput(attrs={'type': 'date'}),
             'etd_to': forms.DateInput(attrs={'type': 'date'}),
         }
-
-
-MODALITY_CHOICES = (
-    ('all', 'Все'),
-    ('sea_rr', 'Море + ЖД'),
-    ('sea', 'Море'),
-    ('rr', 'ЖД')
-)
-class ModalityForm(forms.Form):
-    modality = forms.ChoiceField(
-        label='Транспорт',
-        choices=MODALITY_CHOICES,
-    )
 
 
 class SeaRRCalculationForm(forms.ModelForm):
@@ -64,3 +51,10 @@ class SeaRRCalculationForm(forms.ModelForm):
         if rr_end_terminal and rr_end_terminal not in end_city.rr_terminals.all():
             raise forms.ValidationError("Выбранный ЖД терминал не относится к выбранному городу")
         return cleaned_data
+
+
+class UploadForm(forms.ModelForm):
+
+    class Meta:
+        model = FileUpload
+        fields = ('uploaded_file',)
