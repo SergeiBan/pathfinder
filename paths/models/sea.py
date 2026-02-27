@@ -103,6 +103,9 @@ class SeaETD(models.Model):
         verbose_name_plural = 'Даты выхода судов'
 
 
+class ForeignAgent(models.Model):
+    title = models.CharField('Агент', max_length=64)
+
 class SeaRate(models.Model):
     sea_line = models.ForeignKey(SeaLine, on_delete=models.CASCADE, related_name='sea_rates')
     sea_start_terminal = models.ForeignKey(SeaStartTerminal, on_delete=models.CASCADE, related_name='sea_rates')
@@ -111,6 +114,8 @@ class SeaRate(models.Model):
     validity = models.DateField('Валидность до')
     container = models.CharField('Тип КТК', max_length=16, choices=constants.CONTAINER_OPTIONS)
     rate = models.DecimalField('Стоимость, $', max_digits=9, decimal_places=2)
+    intermediate = models.ForeignKey(SeaStartTerminal, on_delete=models.CASCADE, null=True, blank=True, related_name='start_point_rates')
+    agent = models.ForeignKey(ForeignAgent, on_delete=models.CASCADE, null=True, blank=True, related_name='agents')
 
     def __str__(self):
         return f'${self.rate} {self.sea_line} {self.sea_start_terminal} - {self.sea_end_terminal}'

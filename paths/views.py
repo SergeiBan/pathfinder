@@ -68,6 +68,9 @@ def sea_rr_calculation(request):
             container=form.cleaned_data['container']
         ).distinct()
 
+        agent_rates = sea_rate.filter(agent__isnull=True)
+        line_rates = sea_rate.filter(agent__isnull=False)
+
         # Получаем все ЖД ставки из всех морских терминалов прибытия во все ЖД терминалы города доставки
         rr_rates = InnerRRRate.objects.filter(
             end_terminal__in=end_terminals,
@@ -135,12 +138,24 @@ def file_upload(request):
         if form.is_valid():
             uploaded_file = request.FILES['uploaded_file']
             all_sheets = pd.read_excel(uploaded_file, sheet_name=None)
+
+            pols_to_create = []
             for sheet_name, df in all_sheets.items():
                 
                 if sheet_name == 'Shanghai':
                     
                     for row in df.itertuples(index=False):
-                        print(row, '\n')
+                        first_col = row[0]
+                        if isinstance(first_col, str) and 'POL:' in first_col:
+                            sea_start = first_col[4:].split('\n')
+
+                            POL = sea_start[0]
+                            if len(sea_start) > 2:
+                                drop_off = ' '.join(sea_start[1:])
+                            else:
+                                drop_off = sea_start[1]
+                            # pols_to_create.append()
+
 
             return redirect('paths:sea_rr_calculation')
     else:
