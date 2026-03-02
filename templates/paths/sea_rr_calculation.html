@@ -24,12 +24,12 @@
             </div>
         {% endif %}
 
-        {% if rates %}
+        {% if line_rates %}
             <div class="card mb-2">
                 <div class="card-body">
-                    <h5 class="card-title text-success">Море + ЖД</h5>
+                    <h5 class="card-title text-success">Линейные ставки Море + ЖД</h5>
                     <p class="card-text"><ul>
-                        {% for rate in rates %}
+                        {% for rate in line_rates %}
                             <li>{{ rate.0 }} + {{ rate.1 }} + автовывоз {{ rate.1.truck }} ₽</li>
                         {% endfor %}
                     </ul></p>
@@ -37,12 +37,38 @@
             </div>
         {% endif %}
 
-        {% if sea_rr_truck %}
+        {% if line_sea_rr_truck %}
             <div class="card mb-2">
                 <div class="card-body">
-                    <h5 class="card-title text-success">Море + ЖД с автовывозом в другой город</h5>
+                    <h5 class="card-title text-success">Линейные ставки Море + ЖД с автовывозом в другой город</h5>
                     <p class="card-text"><ul>
-                        {% for rate in sea_rr_truck %}<li>{{ rate.0 }} + {{ rate.1 }} + {{ rate.2 }}</li>{% endfor %}
+                        {% for rate in line_sea_rr_truck %}
+                            <li>{{ rate.0 }} + {{ rate.1 }} + {{ rate.2 }} ₽</li>
+                        {% endfor %}
+                    </ul></p>
+                </div>
+            </div>
+        {% endif %}
+
+        {% if agent_rates %}
+            <div class="card mb-2">
+                <div class="card-body">
+                    <h5 class="card-title text-success">Агентские ставки на Море + ЖД</h5>
+                    <p class="card-text"><ul>
+                        {% for rate in agent_rates %}
+                            <li>{{ rate.0 }} + {{ rate.1 }} + автовывоз {{ rate.1.truck }} ₽</li>
+                        {% endfor %}
+                    </ul></p>
+                </div>
+            </div>
+        {% endif %}
+
+        {% if agent_sea_rr_truck %}
+            <div class="card mb-2">
+                <div class="card-body">
+                    <h5 class="card-title text-success">Агентские ставки на море + ЖД с автовывозом в другой город</h5>
+                    <p class="card-text"><ul>
+                        {% for rate in agent_sea_rr_truck %}<li>{{ rate.0 }} + {{ rate.1 }} + {{ rate.2 }}</li>{% endfor %}
                     </ul></p>
                 </div>
             </div>

@@ -4,7 +4,7 @@ from .models import (
     SeaCalculation, SeaRate, InnerRRRate, LocalHubCity, SeaEndTerminal, InnerRRTerminal,
     DistantTruckRate
 )
-from .utils import get_line_mm_rates
+from .utils import get_line_mm_rates, get_agent_mm_rates, find_seapath, find_all_seapaths
 from django.db.models import F
 from django.http import Http404
 from django.contrib.auth.decorators import permission_required
@@ -43,19 +43,22 @@ def rr_calculation(request):
 
 def sea_rr_calculation(request):
     form = SeaRRCalculationForm(request.POST or None)
-    sea_rr_rates = None
     direct_sea_rates = None
+    sea_truck = None
+
+    line_rates = None 
+    line_sea_rr_truck = None
+
+    agent_rates = None
+    agent_sea_rr_truck = None
+
     end_terminals = None
     remote_truck_rates = None
-    sea_rr_truck = []
     sea_truck = []
-    line_mm_rates = []
     
-    sea_to_rr = []
     if form.is_valid():
         end_city = form.cleaned_data['end_city']
         particular_rr_terminal = form.cleaned_data['rr_end_terminal']
-
         
         # Если выбран конкретный ЖД терминал прибытия
         if particular_rr_terminal:
@@ -64,43 +67,28 @@ def sea_rr_calculation(request):
             end_terminals = end_city.rr_terminals.all()
         
         # 1. Получаем все морские ставки из терминала отправления во все российские терминалы
-        sea_rates = SeaRate.objects.filter(
-            sea_start_terminal=form.cleaned_data['sea_start_terminal'],
-            container=form.cleaned_data['container']
-        ).distinct()
-
-        # 1.1 Делим морские ставки на линейные и агентские
+        sea_rates = find_all_seapaths(
+            form.cleaned_data['sea_start_terminal'],
+            form.cleaned_data['container'],
+            SeaRate,
+            form.cleaned_data['etd_from'],
+            form.cleaned_data['etd_to']
+        )
+      
+        # 2 Делим морские ставки на линейные и агентские
         agent_sea_rates = sea_rates.filter(agent__isnull=False)
         line_sea_rates = sea_rates.filter(agent__isnull=True)
         
         line_rates, line_sea_rr_truck = get_line_mm_rates(
             line_sea_rates, InnerRRRate, end_terminals, form.cleaned_data['container'], end_city)
-
-        # 2. Получаем все ЖД ставки из всех морских терминалов прибытия во все ЖД терминалы города доставки
-        rr_rates = InnerRRRate.objects.filter(
-            end_terminal__in=end_terminals,
-            container=form.cleaned_data['container']
-        ).distinct().annotate(truck=F('end_terminal__city__local_truck__price'))
+        
+        agent_rates, agent_sea_rr_truck = get_agent_mm_rates(
+            agent_sea_rates, InnerRRRate, end_terminals, form.cleaned_data['container'], end_city)
 
 
-        # 3. Если нужен автовывоз в другой город
+        # 3. Вдруг возможен автовывоз из портового города в конечный город
         if end_city.ingoing_truck_rates.exists():
             remote_truck_rates = end_city.ingoing_truck_rates.all()
-            all_rr_rates = InnerRRRate.objects.all()
-
-            # Сопоставляем ставки ЖД и автовывоза по критерию - город
-            rr_plus_truck_rates = []
-            for remote_truck in remote_truck_rates:
-                for rr_rate in all_rr_rates:
-                    if rr_rate.end_terminal.city == remote_truck.start_city:
-                        rr_plus_truck_rates.append([rr_rate, remote_truck])
-
-            # Сопоставляем морские ставки и ЖД ставки по городу, получим путь море - ЖД - автовывоз
-            sea_rr_truck = []
-            for sea_rate in sea_rates:
-                for rr_truck in rr_plus_truck_rates:
-                    if sea_rate.sea_end_terminal.local_hub_city == rr_truck[0].start_terminal.city:
-                        sea_rr_truck.append([sea_rate, rr_truck[0], rr_truck[1]])
             
             # Сопоставляем морские ставки и ставки автовывоза по городу,
             # если возможен автовывоз из портового горада, минуя ЖД
@@ -118,19 +106,17 @@ def sea_rr_calculation(request):
                 sea_end_terminal__in=end_terminals
             ).annotate(truck=F('sea_end_terminal__local_hub_city__local_truck__price'))
 
-        # 5. Мультимодальная ставка составляется из морской и ЖД ставок
-        for sea_rate in sea_rates:
-            for rr_rate in rr_rates:
-                if sea_rate.sea_end_terminal.local_hub_city == rr_rate.start_terminal.city:
-                    sea_to_rr.append([sea_rate, rr_rate])
-
-
     context = {
         'form': form,
-        'rates': sea_to_rr,
         'direct_sea_rates': direct_sea_rates,
-        'sea_rr_truck': sea_rr_truck,
-        'sea_truck': sea_truck
+        'sea_truck': sea_truck,
+
+        'line_rates': line_rates,
+        'line_sea_rr_truck': line_sea_rr_truck,
+
+        'agent_rates': agent_rates,
+        'agent_sea_rr_truck': agent_sea_rr_truck
+
     }
 
     return render(request, 'paths/sea_rr_calculation.html', context)
@@ -162,6 +148,7 @@ def file_upload(request):
                                 drop_off = sea_start[1]
                             # pols_to_create.append()
                             # print(POL, drop_off)
+                            print(POL, drop_off)
 
 
             return redirect('paths:sea_rr_calculation')
