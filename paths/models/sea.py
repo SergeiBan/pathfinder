@@ -106,6 +106,13 @@ class SeaETD(models.Model):
 class ForeignAgent(models.Model):
     title = models.CharField('Агент', max_length=64)
 
+    def __str__(self):
+        return str(self.title)
+
+    class Meta:
+        verbose_name = 'Агент'
+        verbose_name_plural = 'Агенты'
+
 class SeaRate(models.Model):
     sea_line = models.ForeignKey(SeaLine, on_delete=models.CASCADE, related_name='sea_rates')
     sea_start_terminal = models.ForeignKey(SeaStartTerminal, on_delete=models.CASCADE, related_name='sea_rates')

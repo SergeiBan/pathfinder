@@ -67,12 +67,22 @@ class RRRate(models.Model):
 
 
 class InnerRRRate(models.Model):
-    start_terminal = models.ForeignKey(InnerRRTerminal, on_delete=models.CASCADE, related_name='inner_rates_outgoing')
-    end_terminal = models.ForeignKey(InnerRRTerminal, on_delete=models.CASCADE, related_name='inner_rates_incoming')
+    start_terminal = models.ForeignKey(InnerRRTerminal, verbose_name='ЖД терминал отправки', on_delete=models.CASCADE, related_name='inner_rates_outgoing')
+    end_terminal = models.ForeignKey(InnerRRTerminal, verbose_name='ЖД терминал прибытия', on_delete=models.CASCADE, related_name='inner_rates_incoming')
     container = models.CharField('Тип КТК', max_length=16, choices=constants.CONTAINER_OPTIONS)
     rate = models.DecimalField('Стоимость', max_digits=9, decimal_places=2)
+    line = models.ForeignKey('SeaLine', verbose_name='Линия', on_delete=models.CASCADE, related_name='inner_rr_rates', null=True, blank=True)
+
+    def _check_for_line(self):
+        if self.line:
+            return self.line
+        else:
+            return False
 
     def __str__(self):
+        line = self._check_for_line()
+        if line:
+             return f'{self.rate} ₽ {line} {self.start_terminal} - {self.end_terminal}'
         return f'{self.rate} ₽ {self.start_terminal} - {self.end_terminal}'
     
     class Meta:
