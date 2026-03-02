@@ -4,7 +4,7 @@ from .models import (
     SeaCalculation, SeaRate, InnerRRRate, LocalHubCity, SeaEndTerminal, InnerRRTerminal,
     DistantTruckRate
 )
-from .utils import get_line_mm_rates, get_agent_mm_rates, find_seapath, find_all_seapaths
+from .utils import get_line_mm_rates, get_agent_mm_rates, find_seapath, find_all_seapaths, get_pol
 from django.db.models import F
 from django.http import Http404
 from django.contrib.auth.decorators import permission_required
@@ -139,6 +139,7 @@ def file_upload(request):
                     for row in df.itertuples(index=False):
                         first_col = row[0]
                         if isinstance(first_col, str):
+                            POL, drop_off = get_pol(first_col)
                             sea_start = first_col.split('\n')
 
                             POL = sea_start[0]
