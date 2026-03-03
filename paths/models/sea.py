@@ -117,7 +117,7 @@ class SeaRate(models.Model):
     sea_line = models.ForeignKey(SeaLine, on_delete=models.CASCADE, related_name='sea_rates')
     sea_start_terminal = models.ForeignKey(SeaStartTerminal, on_delete=models.CASCADE, related_name='sea_rates')
     sea_end_terminal = models.ForeignKey(SeaEndTerminal, on_delete=models.CASCADE, related_name='sea_rates')
-    etd = models.ManyToManyField(SeaETD, related_name='sea_rates')
+    etd = models.ManyToManyField(SeaETD, related_name='sea_rates', blank=True)
     validity = models.DateField('Валидность до')
     container = models.CharField('Тип КТК', max_length=16, choices=constants.CONTAINER_OPTIONS)
     rate = models.DecimalField('Стоимость, $', max_digits=9, decimal_places=2)

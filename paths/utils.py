@@ -1,5 +1,6 @@
 from datetime import date
 from django.db.models import F
+from .models import SeaStartTerminal, SeaLine
 
 
 def find_seapath(sea_start_terminal, sea_end_terminal, container, SeaRate, etd_from=None, etd_to=None):
@@ -26,25 +27,31 @@ def find_seapath(sea_start_terminal, sea_end_terminal, container, SeaRate, etd_f
 
 
 def find_all_seapaths(sea_start_terminal, container, SeaRate, etd_from=None, etd_to=None):
+    today = date.today()
     applicable_rates = None
-    applicable_rates = SeaRate.objects.filter(
-        sea_start_terminal=sea_start_terminal, container=container
+    applicable_rates_no_etd = SeaRate.objects.filter(
+        sea_start_terminal=sea_start_terminal, container=container, etd__etd__isnull=True
         ).distinct()
-    if applicable_rates:
-        today = date.today()
+    applicable_rates_with_etd = SeaRate.objects.filter(
+        sea_start_terminal=sea_start_terminal, container=container, etd__etd__isnull=False
+        ).distinct()
+    
+    if applicable_rates_no_etd:
+        applicable_rates = applicable_rates_no_etd.filter(validity__gt=today).distinct()
+
+    if applicable_rates_with_etd:
 
         if etd_from is None and etd_to is None:
-            applicable_rates = applicable_rates.filter(etd__etd__gt=today).distinct()
+            applicable_rates = applicable_rates_with_etd.filter(etd__etd__gt=today).distinct()
         
         elif etd_from is None and etd_to is not None:
-            applicable_rates = applicable_rates.filter(etd__etd__gt=today, etd__etd__lte=etd_to).distinct()
+            applicable_rates = applicable_rates_with_etd.filter(etd__etd__gt=today, etd__etd__lte=etd_to).distinct()
 
         elif etd_from is not None and etd_to is None:
-            applicable_rates = applicable_rates.filter(etd__etd__gte=etd_from).distinct()
+            applicable_rates = applicable_rates_with_etd.filter(etd__etd__gte=etd_from).distinct()
 
         elif etd_from is not None and etd_to is not None:
-            applicable_rates = applicable_rates.filter(etd__etd__gte=etd_from, etd__etd__lte=etd_to).distinct()
-
+            applicable_rates = applicable_rates_with_etd.filter(etd__etd__gte=etd_from, etd__etd__lte=etd_to).distinct()
     return applicable_rates
 
 
@@ -131,9 +138,50 @@ def get_pol(first_col):
     
     sea_start = first_col.split('\n')
 
-    POL = sea_start[0]
+    POL = sea_start[0].strip()
     if len(sea_start) > 2:
-        drop_off = ' '.join(sea_start[1:])
+        drop_off = ' '.join(sea_start[1:]).strip()
     else:
-        drop_off = sea_start[1]
+        drop_off = sea_start[1].strip()
+
+    obj, created = SeaStartTerminal.objects.get_or_create(
+        name=POL,
+        defaults={}
+    )
+    POL = obj or created
     return POL, drop_off
+
+
+def get_carrier(second_col):
+    carrier = second_col.strip()
+    obj, created = SeaLine.objects.get_or_create(
+        name=carrier,
+        defaults={}
+    )
+    carrier = obj or created
+    return carrier
+
+
+def get_pods(pod_col):
+    pods = None
+    if '&' in pod_col:
+        pod_col = pod_col.split('&')
+        pods = [p.strip() for p in pod_col]    
+    elif '/' in pod_col:
+        pod_col = pod_col.split('/')
+        pods = [p.strip() for p in pod_col]
+    else:
+        pods = [pod_col.strip()]
+
+    result_pods = []
+    for p in pods:
+        if p in ['VRANGEL BAY', 'Vostochny']:
+            result_pods.append('Vostochny (VRANGEL BAY)')
+        else:
+            result_pods.append(p)
+    return  result_pods
+
+
+def get_etd(etd_col):
+    if isinstance(etd_col, str):
+        print(etd_col)

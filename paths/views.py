@@ -2,9 +2,12 @@ from django.shortcuts import render, redirect
 from .forms import SeaCalculationForm, RRCalculationForm, SeaRRCalculationForm, UploadForm
 from .models import (
     SeaCalculation, SeaRate, InnerRRRate, LocalHubCity, SeaEndTerminal, InnerRRTerminal,
-    DistantTruckRate
+    DistantTruckRate, SeaStartTerminal
 )
-from .utils import get_line_mm_rates, get_agent_mm_rates, find_seapath, find_all_seapaths, get_pol
+from .utils import (
+    get_line_mm_rates, get_agent_mm_rates, find_seapath, find_all_seapaths, get_pol,
+    get_carrier, get_pods, get_etd
+)
 from django.db.models import F
 from django.http import Http404
 from django.contrib.auth.decorators import permission_required
@@ -74,6 +77,14 @@ def sea_rr_calculation(request):
             form.cleaned_data['etd_from'],
             form.cleaned_data['etd_to']
         )
+
+        # 1.1 Если не нашлось ставок. НУЖНО добавить сообщение для пользователей!
+        if not sea_rates:
+            context = {
+            'form': form,
+            }
+            return render(request, 'paths/sea_rr_calculation.html', context)
+
       
         # 2 Делим морские ставки на линейные и агентские
         agent_sea_rates = sea_rates.filter(agent__isnull=False)
@@ -127,29 +138,35 @@ def file_upload(request):
         
     if request.method == 'POST':
         form = UploadForm(request.POST, request.FILES)
+        POL = None
+
         if form.is_valid():
             uploaded_file = request.FILES['uploaded_file']
             all_sheets = pd.read_excel(uploaded_file, sheet_name=None)
 
-            pols_to_create = []
             for sheet_name, df in all_sheets.items():
                 
                 if sheet_name == 'Shanghai':
                     
                     for row in df.itertuples(index=False):
+                        # В первой колонке - порт отправки и дроп офф
                         first_col = row[0]
                         if isinstance(first_col, str):
                             POL, drop_off = get_pol(first_col)
-                            sea_start = first_col.split('\n')
 
-                            POL = sea_start[0]
-                            if len(sea_start) > 2:
-                                drop_off = ' '.join(sea_start[1:])
-                            else:
-                                drop_off = sea_start[1]
-                            # pols_to_create.append()
-                            # print(POL, drop_off)
-                            print(POL, drop_off)
+                        # Во второй колонке - линия
+                        second_col = row[1]
+                        if isinstance(second_col, str):
+                            sea_line = get_carrier(second_col)
+                        
+                        # В колонке E (пятая) - морские терминалы прибытия
+                        POD_col = row[4]
+                        if isinstance(POD_col, str):
+                            pods = get_pods(POD_col)
+                        
+                        # В колонке F (седьмая) - ETD
+                        etd_col = row[6]
+                        etd = get_etd(etd_col)
 
 
             return redirect('paths:sea_rr_calculation')
