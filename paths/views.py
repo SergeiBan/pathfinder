@@ -2,11 +2,11 @@ from django.shortcuts import render, redirect
 from .forms import SeaCalculationForm, RRCalculationForm, SeaRRCalculationForm, UploadForm
 from .models import (
     SeaCalculation, SeaRate, InnerRRRate, LocalHubCity, SeaEndTerminal, InnerRRTerminal,
-    DistantTruckRate, SeaStartTerminal
+    DistantTruckRate, SeaStartTerminal, 
 )
 from .utils import (
     get_line_mm_rates, get_agent_mm_rates, find_seapath, find_all_seapaths, get_pol,
-    get_carrier, get_pods, get_etd
+    get_carrier, get_pods, get_etd, get_container_prices
 )
 from django.db.models import F
 from django.http import Http404
@@ -149,6 +149,13 @@ def file_upload(request):
                 if sheet_name == 'Shanghai':
                     
                     for row in df.itertuples(index=False):
+
+                        # Прежде всего проверяем, что цена есть хотя бы на один тип контейнера
+                        col_20 = get_container_prices(row[2])
+                        col_40 = get_container_prices(row[3])
+                        if not col_20 and not col_40:
+                            continue
+
                         # В первой колонке - порт отправки и дроп офф
                         first_col = row[0]
                         if isinstance(first_col, str):
@@ -166,7 +173,8 @@ def file_upload(request):
                         
                         # В колонке F (седьмая) - ETD
                         etd_col = row[6]
-                        etd = get_etd(etd_col)
+                        etds = get_etd(etd_col)
+
 
 
             return redirect('paths:sea_rr_calculation')

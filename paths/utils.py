@@ -1,6 +1,7 @@
 from datetime import date
 from django.db.models import F
-from .models import SeaStartTerminal, SeaLine
+from .models import SeaStartTerminal, SeaLine, SeaETD, SeaEndTerminal
+import sys, datetime
 
 
 def find_seapath(sea_start_terminal, sea_end_terminal, container, SeaRate, etd_from=None, etd_to=None):
@@ -37,21 +38,23 @@ def find_all_seapaths(sea_start_terminal, container, SeaRate, etd_from=None, etd
         ).distinct()
     
     if applicable_rates_no_etd:
-        applicable_rates = applicable_rates_no_etd.filter(validity__gt=today).distinct()
+        applicable_rates_no_etd = applicable_rates_no_etd.filter(validity__gt=today).distinct()
 
     if applicable_rates_with_etd:
 
         if etd_from is None and etd_to is None:
-            applicable_rates = applicable_rates_with_etd.filter(etd__etd__gt=today).distinct()
+            applicable_rates_with_etd = applicable_rates_with_etd.filter(etd__etd__gt=today).distinct()
         
         elif etd_from is None and etd_to is not None:
-            applicable_rates = applicable_rates_with_etd.filter(etd__etd__gt=today, etd__etd__lte=etd_to).distinct()
+            applicable_rates_with_etd = applicable_rates_with_etd.filter(etd__etd__gt=today, etd__etd__lte=etd_to).distinct()
 
         elif etd_from is not None and etd_to is None:
-            applicable_rates = applicable_rates_with_etd.filter(etd__etd__gte=etd_from).distinct()
+            applicable_rates_with_etd = applicable_rates_with_etd.filter(etd__etd__gte=etd_from).distinct()
 
         elif etd_from is not None and etd_to is not None:
-            applicable_rates = applicable_rates_with_etd.filter(etd__etd__gte=etd_from, etd__etd__lte=etd_to).distinct()
+            applicable_rates_with_etd = applicable_rates_with_etd.filter(etd__etd__gte=etd_from, etd__etd__lte=etd_to).distinct()
+    
+    applicable_rates = applicable_rates_no_etd | applicable_rates_with_etd
     return applicable_rates
 
 
@@ -179,9 +182,66 @@ def get_pods(pod_col):
             result_pods.append('Vostochny (VRANGEL BAY)')
         else:
             result_pods.append(p)
+    
+    # Ждем от Эйнара список городов
+    # for p in result_pods:
+    #     obj, created = SeaEndTerminal.objects.get_or_create(
+    #     name=p,
+    #     defaults={}
+    # )
+
     return  result_pods
 
 
+MONTHS = {
+    'Mar': 3,
+    'Apr': 4,
+}
+
 def get_etd(etd_col):
+    year = datetime.date.today().year
+
+    if etd_col != etd_col:
+        return None
+    
+    etds = None
     if isinstance(etd_col, str):
-        print(etd_col)
+        if '/' in etd_col:
+            return None
+        
+        if '&' in etd_col:
+            etd_col = etd_col.split('&')
+            etds = [e.strip() for e in etd_col] 
+        else:
+            etds = [etd_col.strip()]
+        
+
+        for etd in etds:
+            etd = etd.split('-')
+            day = int(etd[0])
+            month = MONTHS[etd[1]]
+            new_etd = datetime.date(year, month, day)
+            print(new_etd)
+
+            
+    return etds
+
+
+def get_container_prices(col_price):
+    if col_price != col_price:
+        return None
+
+    if (isinstance(col_price, int)):
+        return col_price
+    
+    if not (isinstance(col_price, str)):
+        sys.exit('the price is of unknown type')
+
+    if '/' in col_price or 'SPACE' in col_price or 'NO' in col_price:
+        return None
+    
+    col_price = col_price.replace(' ', '')
+    if '$' in col_price:
+        col_price = col_price[1:]
+    
+    return int(col_price)
