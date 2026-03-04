@@ -1,7 +1,9 @@
 from datetime import date
 from django.db.models import F
-from .models import SeaStartTerminal, SeaLine, SeaETD, SeaEndTerminal
+from .models import SeaStartTerminal, SeaLine, SeaETD, SeaEndTerminal, LocalHubCity
 import sys, datetime
+from .models import PORTS, ForeignAgent
+from django.shortcuts import get_object_or_404
 
 
 def find_seapath(sea_start_terminal, sea_end_terminal, container, SeaRate, etd_from=None, etd_to=None):
@@ -178,28 +180,61 @@ def get_pods(pod_col):
 
     result_pods = []
     for p in pods:
-        if p in ['VRANGEL BAY', 'Vostochny']:
+        if p in ['VRANGEL BAY', 'Vostochny', 'VRANGEL']:
             result_pods.append('Vostochny (VRANGEL BAY)')
+        elif p in ['PL']:
+            result_pods.append('Pacific Logistic')
         else:
             result_pods.append(p)
-    
-    # Ждем от Эйнара список городов
-    # for p in result_pods:
-    #     obj, created = SeaEndTerminal.objects.get_or_create(
-    #     name=p,
-    #     defaults={}
-    # )
 
-    return  result_pods
+    city = None
+    for p in result_pods:
+        for k, v in PORTS.items():
+            if p in v:
+                city = k
+        if not city:
+            raise ValueError('Город порта нераспознан')
+    
+    city = get_object_or_404(LocalHubCity, name=city)
+    
+    created_pods = []
+    for p in result_pods:
+        obj, created = SeaEndTerminal.objects.get_or_create(
+        name=p,
+        defaults={'local_hub_city': city}
+    )
+    created_pods.append(obj or created)
+
+    return created_pods
 
 
 MONTHS = {
     'Mar': 3,
+    'март': 3,
     'Apr': 4,
+    'May': 5,
 }
 
-def get_etd(etd_col):
+
+def make_dates(wierd_dates):
     year = datetime.date.today().year
+
+    new_dates = []
+    for wierd_date in wierd_dates:
+        if '-' in wierd_date:
+            wierd_date = wierd_date.split('-')
+        elif '.' in wierd_date:
+            wierd_date = wierd_date.split('.')
+
+        day = int(wierd_date[0].strip())
+        month = MONTHS[wierd_date[1].strip()]
+        new_date = datetime.date(year, month, day)
+        new_dates.append(new_date)
+
+    return new_dates
+
+
+def get_etd(etd_col):
 
     if etd_col != etd_col:
         return None
@@ -215,16 +250,15 @@ def get_etd(etd_col):
         else:
             etds = [etd_col.strip()]
         
-
-        for etd in etds:
-            etd = etd.split('-')
-            day = int(etd[0])
-            month = MONTHS[etd[1]]
-            new_etd = datetime.date(year, month, day)
-            print(new_etd)
-
+        new_dates = make_dates(etds)
+        new_etds = []
+        for new_date in new_dates:
+            obj, created = SeaETD.objects.get_or_create(
+                etd=new_date,
+            )
+            new_etds.append(obj or created)
             
-    return etds
+    return new_etds
 
 
 def get_container_prices(col_price):
@@ -245,3 +279,25 @@ def get_container_prices(col_price):
         col_price = col_price[1:]
     
     return int(col_price)
+
+
+def get_conversion(col_conversion):
+    if (isinstance(col_conversion, float)):
+        return col_conversion
+    else:
+        raise ValueError('Ставка конвертации не десятичное число')
+
+
+def check_ports():
+    for p in PORTS:
+        obj, created = LocalHubCity.objects.get_or_create(
+        name=p,
+        defaults={}
+    )
+        
+
+def check_agent(agent):
+    agents = list(ForeignAgent.objects.values_list('title', flat=True))
+    if agent in agents:
+        return True
+    return False

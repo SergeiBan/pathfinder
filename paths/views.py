@@ -6,7 +6,8 @@ from .models import (
 )
 from .utils import (
     get_line_mm_rates, get_agent_mm_rates, find_seapath, find_all_seapaths, get_pol,
-    get_carrier, get_pods, get_etd, get_container_prices
+    get_carrier, get_pods, get_etd, get_container_prices, make_dates, get_conversion,
+    check_ports, check_agent
 )
 from django.db.models import F
 from django.http import Http404
@@ -167,6 +168,7 @@ def file_upload(request):
                             sea_line = get_carrier(second_col)
                         
                         # В колонке E (пятая) - морские терминалы прибытия
+                        check_ports()
                         POD_col = row[4]
                         if isinstance(POD_col, str):
                             pods = get_pods(POD_col)
@@ -175,7 +177,23 @@ def file_upload(request):
                         etd_col = row[6]
                         etds = get_etd(etd_col)
 
+                        # В десятой колонке - валидность
+                        validity_col = row[9]
+                        validity_date = make_dates([validity_col])[0]
 
+                        # В колонке 12 - ставка конвертации
+                        conversion = row[11]
+                        conversion_rate = get_conversion(row[11])
+
+                        # В колонке 14 - агент или линия
+                        agent = row[13]
+                        is_agent = check_agent(agent)
+
+                        SeaRate.objects.create(
+                            sea_line=sea_line,
+                            sea_start_terminal=POL,
+                            sea_end_terminal=
+                        )
 
             return redirect('paths:sea_rr_calculation')
     else:

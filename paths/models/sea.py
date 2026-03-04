@@ -31,7 +31,6 @@ class SeaStartTerminal(models.Model):
         verbose_name = 'Порт отправки'
         verbose_name_plural = 'Порты отправки'
 
-
 class LocalHubCity(models.Model):
     name = models.CharField('Внутренний транспортный хаб', max_length=32, unique=True)
 
@@ -123,6 +122,7 @@ class SeaRate(models.Model):
     rate = models.DecimalField('Стоимость, $', max_digits=9, decimal_places=2)
     intermediate = models.ForeignKey(SeaStartTerminal, on_delete=models.CASCADE, null=True, blank=True, related_name='start_point_rates')
     agent = models.ForeignKey(ForeignAgent, on_delete=models.CASCADE, null=True, blank=True, related_name='agents')
+    conversion = models.FloatField(verbose_name='Конвертация, %')
 
     def __str__(self):
         return f'${self.rate} {self.sea_line} {self.sea_start_terminal} - {self.sea_end_terminal}'
