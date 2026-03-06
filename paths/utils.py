@@ -32,13 +32,23 @@ def find_seapath(sea_start_terminal, sea_end_terminal, container, SeaRate, etd_f
 def find_all_seapaths(sea_start_terminal, container, SeaRate, etd_from=None, etd_to=None):
     today = date.today()
     applicable_rates = None
-    applicable_rates_no_etd = SeaRate.objects.filter(
-        sea_start_terminal=sea_start_terminal, container=container, etd__etd__isnull=True
-        ).distinct()
-    applicable_rates_with_etd = SeaRate.objects.filter(
-        sea_start_terminal=sea_start_terminal, container=container, etd__etd__isnull=False
-        ).distinct()
+
+    if container == '20DC':
+        applicable_rates_no_etd = SeaRate.objects.filter(
+            sea_start_terminal=sea_start_terminal, etd__etd__isnull=True, rate_20__isnull=False
+            ).distinct()
+        applicable_rates_with_etd = SeaRate.objects.filter(
+            sea_start_terminal=sea_start_terminal, etd__etd__isnull=False, rate_20__isnull=False
+            ).distinct()
     
+    if container == '40HC':
+        applicable_rates_no_etd = SeaRate.objects.filter(
+            sea_start_terminal=sea_start_terminal, etd__etd__isnull=True, rate_40__isnull=False
+            ).distinct()
+        applicable_rates_with_etd = SeaRate.objects.filter(
+            sea_start_terminal=sea_start_terminal, etd__etd__isnull=False, rate_40__isnull=False
+            ).distinct()
+        
     if applicable_rates_no_etd:
         applicable_rates_no_etd = applicable_rates_no_etd.filter(validity__gt=today).distinct()
 
@@ -65,10 +75,16 @@ def get_line_mm_rates(line_rates, InnerRRRate, end_terminals, container, end_cit
     sea_rr_truck = []
 
     # Получаем все ЖД ставки из всех морских терминалов прибытия во все ЖД терминалы города доставки
-    rr_rates = InnerRRRate.objects.filter(
-        end_terminal__in=end_terminals,
-        container=container
-    ).distinct().annotate(truck=F('end_terminal__city__local_truck__price'))
+    if container == '20DC':
+        rr_rates = InnerRRRate.objects.filter(
+            end_terminal__in=end_terminals,
+            rate_20__isnull=False
+        ).distinct().annotate(truck=F('end_terminal__city__local_truck__price'))
+    if container == '40HC':
+        rr_rates = InnerRRRate.objects.filter(
+            end_terminal__in=end_terminals,
+            rate_40__isnull=False
+        ).distinct().annotate(truck=F('end_terminal__city__local_truck__price'))
     
     # Все морские ставки линии сочетаем со всеми ЖД ставками по критериям: город и линия
     for sea_rate in line_rates:
@@ -108,9 +124,16 @@ def get_agent_mm_rates(agent_rates, InnerRRRate, end_terminals, container, end_c
     sea_rr_truck = []
 
     # Получаем все ЖД ставки из всех морских терминалов прибытия во все ЖД терминалы города доставки
-    rr_rates = InnerRRRate.objects.filter(
+    if container == '20DC':
+        rr_rates = InnerRRRate.objects.filter(
             end_terminal__in=end_terminals,
-            container=container,
+            rate_20__isnull=False,
+            line__isnull=True
+        ).distinct().annotate(truck=F('end_terminal__city__local_truck__price'))
+    if container == '40HC':
+        rr_rates = InnerRRRate.objects.filter(
+            end_terminal__in=end_terminals,
+            rate_40__isnull=False,
             line__isnull=True
         ).distinct().annotate(truck=F('end_terminal__city__local_truck__price'))
     
@@ -159,6 +182,7 @@ def get_pol(first_col):
 
 def get_carrier(second_col):
     carrier = second_col.strip()
+    SeaLine.objects.all().delete()
     obj, created = SeaLine.objects.get_or_create(
         name=carrier,
         defaults={}
@@ -198,6 +222,7 @@ def get_pods(pod_col):
     city = get_object_or_404(LocalHubCity, name=city)
     
     created_pods = []
+    SeaEndTerminal.objects.all().delete()
     for p in result_pods:
         obj, created = SeaEndTerminal.objects.get_or_create(
         name=p,
@@ -252,6 +277,8 @@ def get_etd(etd_col):
         
         new_dates = make_dates(etds)
         new_etds = []
+
+        SeaETD.objects.all().delete()
         for new_date in new_dates:
             obj, created = SeaETD.objects.get_or_create(
                 etd=new_date,

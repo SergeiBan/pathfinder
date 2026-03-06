@@ -115,17 +115,18 @@ class ForeignAgent(models.Model):
 class SeaRate(models.Model):
     sea_line = models.ForeignKey(SeaLine, on_delete=models.CASCADE, related_name='sea_rates')
     sea_start_terminal = models.ForeignKey(SeaStartTerminal, on_delete=models.CASCADE, related_name='sea_rates')
-    sea_end_terminal = models.ForeignKey(SeaEndTerminal, on_delete=models.CASCADE, related_name='sea_rates')
+    sea_end_terminal = models.ManyToManyField(SeaEndTerminal, related_name='sea_rates')
     etd = models.ManyToManyField(SeaETD, related_name='sea_rates', blank=True)
     validity = models.DateField('Валидность до')
     container = models.CharField('Тип КТК', max_length=16, choices=constants.CONTAINER_OPTIONS)
-    rate = models.DecimalField('Стоимость, $', max_digits=9, decimal_places=2)
+    rate_20 = models.DecimalField('Стоимость за 20ft, $', max_digits=9, decimal_places=2, null=True, blank=True)
+    rate_40 = models.DecimalField('Стоимость за 40ft, $', max_digits=9, decimal_places=2, null=True, blank=True)
     intermediate = models.ForeignKey(SeaStartTerminal, on_delete=models.CASCADE, null=True, blank=True, related_name='start_point_rates')
     agent = models.ForeignKey(ForeignAgent, on_delete=models.CASCADE, null=True, blank=True, related_name='agents')
     conversion = models.FloatField(verbose_name='Конвертация, %')
 
     def __str__(self):
-        return f'${self.rate} {self.sea_line} {self.sea_start_terminal} - {self.sea_end_terminal}'
+        return f'20ft ${self.rate_20} 40ft ${self.rate_40} {self.sea_line} {self.sea_start_terminal} - {self.sea_end_terminal.all()}'
     
     class Meta:
         verbose_name = 'Морская ставка'

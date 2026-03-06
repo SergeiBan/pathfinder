@@ -79,7 +79,7 @@ def sea_rr_calculation(request):
             form.cleaned_data['etd_to']
         )
 
-        # 1.1 Если не нашлось ставок. НУЖНО добавить сообщение для пользователей!
+        # 1.1 Если не нашлось ставок. НУЖНО БУДЕТ добавить сообщение для пользователей!
         if not sea_rates:
             context = {
             'form': form,
@@ -139,6 +139,8 @@ def file_upload(request):
         
     if request.method == 'POST':
         form = UploadForm(request.POST, request.FILES)
+        SeaStartTerminal.objects.all().delete()
+
         POL = None
 
         if form.is_valid():
@@ -152,15 +154,16 @@ def file_upload(request):
                     for row in df.itertuples(index=False):
 
                         # Прежде всего проверяем, что цена есть хотя бы на один тип контейнера
-                        col_20 = get_container_prices(row[2])
-                        col_40 = get_container_prices(row[3])
-                        if not col_20 and not col_40:
+                        rate_20 = get_container_prices(row[2])
+                        rate_40 = get_container_prices(row[3])
+                        if not rate_20 and not rate_40:
                             continue
 
                         # В первой колонке - порт отправки и дроп офф
                         first_col = row[0]
                         if isinstance(first_col, str):
                             POL, drop_off = get_pol(first_col)
+                            # check_ports()
 
                         # Во второй колонке - линия
                         second_col = row[1]
@@ -168,7 +171,6 @@ def file_upload(request):
                             sea_line = get_carrier(second_col)
                         
                         # В колонке E (пятая) - морские терминалы прибытия
-                        check_ports()
                         POD_col = row[4]
                         if isinstance(POD_col, str):
                             pods = get_pods(POD_col)
@@ -176,24 +178,35 @@ def file_upload(request):
                         # В колонке F (седьмая) - ETD
                         etd_col = row[6]
                         etds = get_etd(etd_col)
+                        print(etds, row[1])
 
                         # В десятой колонке - валидность
                         validity_col = row[9]
                         validity_date = make_dates([validity_col])[0]
 
                         # В колонке 12 - ставка конвертации
-                        conversion = row[11]
                         conversion_rate = get_conversion(row[11])
 
                         # В колонке 14 - агент или линия
                         agent = row[13]
                         is_agent = check_agent(agent)
 
-                        SeaRate.objects.create(
+                        sr = SeaRate(
                             sea_line=sea_line,
                             sea_start_terminal=POL,
-                            sea_end_terminal=
+                            validity=validity_date,
+                            rate_20=rate_20,
+                            rate_40=rate_40,
+
+                            conversion=conversion_rate
+                            
                         )
+                        sr.save()
+                        sr.sea_end_terminal.add(*pods)
+                        if etds:
+                            sr.etd.add(*etds)
+                        print(sr)
+                        
 
             return redirect('paths:sea_rr_calculation')
     else:

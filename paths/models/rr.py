@@ -71,6 +71,8 @@ class InnerRRRate(models.Model):
     end_terminal = models.ForeignKey(InnerRRTerminal, verbose_name='ЖД терминал прибытия', on_delete=models.CASCADE, related_name='inner_rates_incoming')
     container = models.CharField('Тип КТК', max_length=16, choices=constants.CONTAINER_OPTIONS)
     rate = models.DecimalField('Стоимость', max_digits=9, decimal_places=2)
+    rate_20 = models.DecimalField('Стоимость за 20ft, $', max_digits=9, decimal_places=2, null=True, blank=True)
+    rate_40 = models.DecimalField('Стоимость за 40ft, $', max_digits=9, decimal_places=2, null=True, blank=True)
     line = models.ForeignKey('SeaLine', verbose_name='Линия', on_delete=models.CASCADE, related_name='inner_rr_rates', null=True, blank=True)
 
     def _check_for_line(self):
