@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from .forms import SeaCalculationForm, RRCalculationForm, SeaRRCalculationForm, UploadForm
 from .models import (
     SeaCalculation, SeaRate, InnerRRRate, LocalHubCity, SeaEndTerminal, InnerRRTerminal,
-    DistantTruckRate, SeaStartTerminal, 
+    DistantTruckRate, SeaStartTerminal, SeaLine, SeaETD
 )
 from .utils import (
     get_line_mm_rates, get_agent_mm_rates, find_seapath, find_all_seapaths, get_pol,
@@ -13,6 +13,7 @@ from django.db.models import F
 from django.http import Http404
 from django.contrib.auth.decorators import permission_required
 import pandas as pd
+import datetime
 
 
 def index(request):
@@ -140,6 +141,10 @@ def file_upload(request):
     if request.method == 'POST':
         form = UploadForm(request.POST, request.FILES)
         SeaStartTerminal.objects.all().delete()
+        SeaLine.objects.all().delete()
+        SeaEndTerminal.objects.all().delete()
+        SeaETD.objects.all().delete()
+        LocalHubCity.objects.all().delete()
 
         POL = None
 
@@ -149,7 +154,7 @@ def file_upload(request):
 
             for sheet_name, df in all_sheets.items():
                 
-                if sheet_name == 'Shanghai':
+                if sheet_name == 'Shanghai' or sheet_name == 'Qingdao':
                     
                     for row in df.itertuples(index=False):
 
@@ -163,7 +168,6 @@ def file_upload(request):
                         first_col = row[0]
                         if isinstance(first_col, str):
                             POL, drop_off = get_pol(first_col)
-                            # check_ports()
 
                         # Во второй колонке - линия
                         second_col = row[1]
@@ -176,13 +180,13 @@ def file_upload(request):
                             pods = get_pods(POD_col)
                         
                         # В колонке F (седьмая) - ETD
+                        year = datetime.date.today().year
                         etd_col = row[6]
-                        etds = get_etd(etd_col)
-                        print(etds, row[1])
+                        etds = get_etd(etd_col, year)
 
                         # В десятой колонке - валидность
                         validity_col = row[9]
-                        validity_date = make_dates([validity_col])[0]
+                        validity_date = make_dates([validity_col], year)[0]
 
                         # В колонке 12 - ставка конвертации
                         conversion_rate = get_conversion(row[11])

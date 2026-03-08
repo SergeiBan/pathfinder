@@ -99,7 +99,7 @@ def get_line_mm_rates(line_rates, InnerRRRate, end_terminals, container, end_cit
     # 3. Если нужен автовывоз в другой город
     if end_city.ingoing_truck_rates.exists():
         remote_truck_rates = end_city.ingoing_truck_rates.all()
-        all_rr_rates = InnerRRRate.objects.all() # Все ЖД линии России
+        all_rr_rates = InnerRRRate.objects.all() # Все ЖД ставки внутри России
 
         # Сопоставляем ставки ЖД и автовывоза по критерию - город
         rr_plus_truck_rates = []
@@ -182,7 +182,6 @@ def get_pol(first_col):
 
 def get_carrier(second_col):
     carrier = second_col.strip()
-    SeaLine.objects.all().delete()
     obj, created = SeaLine.objects.get_or_create(
         name=carrier,
         defaults={}
@@ -206,8 +205,10 @@ def get_pods(pod_col):
     for p in pods:
         if p in ['VRANGEL BAY', 'Vostochny', 'VRANGEL']:
             result_pods.append('Vostochny (VRANGEL BAY)')
-        elif p in ['PL']:
+        elif p in ['PL', 'Vladivostok (PL)']:
             result_pods.append('Pacific Logistic')
+        elif p in ['Vladivostok Commercial']:
+            result_pods.append('Vladivostok Commercial Port')
         else:
             result_pods.append(p)
 
@@ -218,15 +219,13 @@ def get_pods(pod_col):
                 city = k
         if not city:
             raise ValueError('Город порта нераспознан')
-    
-    city = get_object_or_404(LocalHubCity, name=city)
+    city, created = LocalHubCity.objects.get_or_create(name=city)
     
     created_pods = []
-    SeaEndTerminal.objects.all().delete()
     for p in result_pods:
         obj, created = SeaEndTerminal.objects.get_or_create(
         name=p,
-        defaults={'local_hub_city': city}
+        defaults={'local_hub_city': city or created}
     )
     created_pods.append(obj or created)
 
@@ -234,6 +233,7 @@ def get_pods(pod_col):
 
 
 MONTHS = {
+    'Feb': 2,
     'Mar': 3,
     'март': 3,
     'Apr': 4,
@@ -241,8 +241,7 @@ MONTHS = {
 }
 
 
-def make_dates(wierd_dates):
-    year = datetime.date.today().year
+def make_dates(wierd_dates, year):
 
     new_dates = []
     for wierd_date in wierd_dates:
@@ -259,7 +258,7 @@ def make_dates(wierd_dates):
     return new_dates
 
 
-def get_etd(etd_col):
+def get_etd(etd_col, year):
 
     if etd_col != etd_col:
         return None
@@ -275,10 +274,10 @@ def get_etd(etd_col):
         else:
             etds = [etd_col.strip()]
         
-        new_dates = make_dates(etds)
+        new_dates = make_dates(etds, year)
         new_etds = []
 
-        SeaETD.objects.all().delete()
+        
         for new_date in new_dates:
             obj, created = SeaETD.objects.get_or_create(
                 etd=new_date,
