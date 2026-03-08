@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from .forms import SeaCalculationForm, RRCalculationForm, SeaRRCalculationForm, UploadForm
 from .models import (
     SeaCalculation, SeaRate, InnerRRRate, LocalHubCity, SeaEndTerminal, InnerRRTerminal,
-    DistantTruckRate, SeaStartTerminal, SeaLine, SeaETD
+    DistantTruckRate, SeaStartTerminal, SeaLine, SeaETD, ACCEPTABLE_POLS
 )
 from .utils import (
     get_line_mm_rates, get_agent_mm_rates, find_seapath, find_all_seapaths, get_pol,
@@ -154,7 +154,7 @@ def file_upload(request):
 
             for sheet_name, df in all_sheets.items():
                 
-                if sheet_name == 'Shanghai' or sheet_name == 'Qingdao':
+                if sheet_name in ACCEPTABLE_POLS:
                     
                     for row in df.itertuples(index=False):
 

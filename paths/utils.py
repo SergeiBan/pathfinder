@@ -203,12 +203,14 @@ def get_pods(pod_col):
 
     result_pods = []
     for p in pods:
-        if p in ['VRANGEL BAY', 'Vostochny', 'VRANGEL']:
+        if p.upper() in ['VRANGEL BAY', 'VOSTOCHNY', 'VRANGEL']:
             result_pods.append('Vostochny (VRANGEL BAY)')
-        elif p in ['PL', 'Vladivostok (PL)']:
+        elif p.upper() in ['PL', 'VLADIVOSTOK (PL)']:
             result_pods.append('Pacific Logistic')
-        elif p in ['Vladivostok Commercial']:
+        elif p.upper() in ['VLADIVOSTOK COMMERCIAL']:
             result_pods.append('Vladivostok Commercial Port')
+        elif p.upper() in ['VLADIVOSTOK (VMPP)']:
+            result_pods.append('Vladivostok (VMPP)')
         else:
             result_pods.append(p)
 
@@ -218,6 +220,7 @@ def get_pods(pod_col):
             if p in v:
                 city = k
         if not city:
+            print(p)
             raise ValueError('Город порта нераспознан')
     city, created = LocalHubCity.objects.get_or_create(name=city)
     

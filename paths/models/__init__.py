@@ -8,4 +8,4 @@ from .rr import (
 
 from .calculations import SeaCalculation, RRCalculation, SeaRRCalculation, FileUpload
 
-from .constants import PORTS
+from .constants import PORTS, ACCEPTABLE_POLS

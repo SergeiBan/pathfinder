@@ -15,3 +15,11 @@ PORTS = {
     ]
 
 }
+
+ACCEPTABLE_POLS = [
+    'Shanghai',
+    'Qingdao',
+    'Tianjin',
+    'Ningbo',
+    'Dalian'
+]
