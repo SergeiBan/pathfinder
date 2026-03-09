@@ -252,7 +252,8 @@ def make_dates(wierd_dates, year):
             wierd_date = wierd_date.split('-')
         elif '.' in wierd_date:
             wierd_date = wierd_date.split('.')
-
+        if 'NSH' in wierd_date[0]:
+            wierd_date[0] = wierd_date[0][3:]
         day = int(wierd_date[0].strip())
         month = MONTHS[wierd_date[1].strip()]
         new_date = datetime.date(year, month, day)

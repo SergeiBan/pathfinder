@@ -21,5 +21,10 @@ ACCEPTABLE_POLS = [
     'Qingdao',
     'Tianjin',
     'Ningbo',
-    'Dalian'
+    'Dalian',
+    'Xiamen',
+    'Nansha',
+    'Yantian',
+    'Shekou',
+    'Busan'
 ]
