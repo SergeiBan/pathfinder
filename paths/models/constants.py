@@ -3,6 +3,15 @@ CONTAINER_OPTIONS = (
     ('H0HC', '40HC'),
 )
 
+
+CORRECT_PODS = {
+    'Vostochny (VRANGEL BAY)': ['VRANGEL BAY', 'VOSTOCHNY', 'VRANGEL'],
+    'Pacific Logistic': ['PL', 'VLADIVOSTOK (PL)'],
+    'Vladivostok Commercial Port': ['VLADIVOSTOK COMMERCIAL'],
+    'Vladivostok (VMPP)': ['VLADIVOSTOK (VMPP)']
+}
+
+
 PORTS = {
     'Vladivostok': [
         'Vladivostok Commercial Port', 'Vladivostok Commercial',
@@ -28,3 +37,8 @@ ACCEPTABLE_POLS = [
     'Shekou',
     'Busan'
 ]
+
+
+RR_NO_CITY = {
+    'Екатеринбург-товарный': ''
+}

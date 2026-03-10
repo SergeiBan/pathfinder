@@ -1,8 +1,7 @@
 from datetime import date
 from django.db.models import F
-from .models import SeaStartTerminal, SeaLine, SeaETD, SeaEndTerminal, LocalHubCity
+from .models import SeaStartTerminal, SeaLine, SeaETD, SeaEndTerminal, LocalHubCity, PORTS, ForeignAgent
 import sys, datetime
-from .models import PORTS, ForeignAgent
 from django.shortcuts import get_object_or_404
 
 
@@ -220,7 +219,6 @@ def get_pods(pod_col):
             if p in v:
                 city = k
         if not city:
-            print(p)
             raise ValueError('Город порта нераспознан')
     city, created = LocalHubCity.objects.get_or_create(name=city)
     

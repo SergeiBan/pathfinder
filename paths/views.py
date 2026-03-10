@@ -15,6 +15,8 @@ from django.contrib.auth.decorators import permission_required
 import pandas as pd
 import datetime
 
+from .parse_rates import parse_for
+
 
 def index(request):
     return redirect('paths:sea_rr_calculation')
@@ -153,6 +155,13 @@ def file_upload(request):
             all_sheets = pd.read_excel(uploaded_file, sheet_name=None)
 
             for sheet_name, df in all_sheets.items():
+
+                if sheet_name == 'FOR':
+                    parse_for(df)
+                    
+                    continue
+                
+                    
                 
                 if sheet_name in ACCEPTABLE_POLS:
                     
@@ -209,7 +218,6 @@ def file_upload(request):
                         sr.sea_end_terminal.add(*pods)
                         if etds:
                             sr.etd.add(*etds)
-                        print(sr)
                         
 
             return redirect('paths:sea_rr_calculation')
