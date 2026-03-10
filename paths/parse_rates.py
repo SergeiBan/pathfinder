@@ -1,4 +1,4 @@
-from .models import CORRECT_PODS
+from .models import CORRECT_PODS, RR_NO_CITY
 from .models import SeaEndTerminal
 from django.shortcuts import get_object_or_404
 
@@ -14,10 +14,14 @@ def parse_for(df):
     pods = []
     current_pod = None
     carrier = None
+    rr_terminal = None
+    rr_city = None
 
     for row in df.itertuples(index=False):
 
-        if current_pod is None and row[0] != row[0]:
+        if current_pod is None and row[0] != row[0]: # Это верхняя строчка
+            continue
+        if row[2] != row[2]: # Это пустая строчка
             continue
 
         if row[0] == row[0] and ':' not in row[0]:
@@ -46,8 +50,22 @@ def parse_for(df):
         current_pod = correct_pods or english_pod
         
         # Берем ЖД терминал прибытия
-        if row[2] == row[2]:
-            print(correct_pods or english_pod, 'arrival', row[2])
+        
+        arrival = row[2].strip()
+        if '(' in arrival:
+            rr_terminal, rr_city = arrival.split('(')
+            rr_terminal = rr_terminal.strip()
+            rr_city = rr_city.replace(')', '').strip()
+            
+        elif arrival in RR_NO_CITY:
+            rr_terminal = arrival
+            rr_city = RR_NO_CITY[arrival]
+
+        
+        elif arrival not in RR_NO_CITY:
+            rr_terminal = f'{arrival} любой ЖД терминал'
+            rr_city = arrival
+            print(rr_terminal, rr_city)
         
         
 
