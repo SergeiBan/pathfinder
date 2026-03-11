@@ -12,6 +12,7 @@ from .utils import (
 from django.db.models import F
 from django.http import Http404
 from django.contrib.auth.decorators import permission_required
+from django.contrib import messages
 import pandas as pd
 import datetime
 
@@ -157,10 +158,12 @@ def file_upload(request):
             for sheet_name, df in all_sheets.items():
 
                 if sheet_name == 'FOR':
-                    parse_for(df)
-                    
+                    sheet_errors = parse_for(df)
+                    if sheet_errors:
+                        for error in sheet_errors:
+                            messages.error(request, error)
                     continue
-                
+                    
                     
                 
                 if sheet_name in ACCEPTABLE_POLS:
@@ -219,8 +222,9 @@ def file_upload(request):
                         if etds:
                             sr.etd.add(*etds)
                         
+            messages.success(request, 'Файл успешно загружен!')
 
-            return redirect('paths:sea_rr_calculation')
+            # return redirect('paths:sea_rr_calculation')
     else:
         form = UploadForm()
     

@@ -4,6 +4,9 @@
 {% block content %}
 <main class="row">
     <div class="col-md-6 mx-auto">
+        {% for message in messages %} 
+            <p{% if message.tags %} class="text-{{ message.tags }}" {% endif %}> {{ message|safe }}</p>
+        {% endfor %}
         <p class="display-6 mb-5">Загрузите файл, пожалуйста</p>
         <form method="POST" enctype="multipart/form-data">
             {% csrf_token %}
