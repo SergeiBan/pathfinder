@@ -1,4 +1,4 @@
-from .models import CORRECT_PODS, RR_NO_CITY, InnerRRRate, InnerRRTerminal, SeaEndTerminal
+from .models import CORRECT_PODS, RR_NO_CITY, InnerRRRate, InnerRRTerminal, SeaEndTerminal, LocalHubCity
 from django.shortcuts import get_object_or_404
 from decimal import Decimal
 
@@ -46,9 +46,11 @@ def parse_for(df):
         guard_40ft = None
         validity = None
         updated_at = None
+        is_by_wagon = False
         pods = []
-        rr_terminal = None
-        rr_city = None
+        rr_end_terminal_name = None
+        rr_end_city_name = None
+        terminal_cost = None
 
         if current_pods is None and row[0] != row[0]: # Это верхняя строчка
             continue
@@ -74,36 +76,27 @@ def parse_for(df):
                 for p in pods:
                     correct_pod = get_correct_pod(p)
                     correct_pods.append(correct_pod)
-
             else:
                 english_pod = [get_correct_pod(english_pod)]
 
-        
-        
-
         current_pods = correct_pods or english_pod
-        print(current_pods)
-
-        for pod in current_pods:
-            terminal = get_object_or_404(SeaEndTerminal, name=pod)
-            city = terminal.local_hub_city
         
         # Берем ЖД терминал прибытия
-        
         arrival = row[2].strip()
+        if '*' in arrival:
+            is_by_wagon = True
         if '(' in arrival:
-            rr_terminal, rr_city = arrival.split('(')
-            rr_terminal = rr_terminal.strip()
-            rr_city = rr_city.replace(')', '').strip()
+            rr_end_terminal_name, rr_end_city_name = arrival.split('(')
+            rr_end_terminal_name = rr_end_terminal_name.strip()
+            rr_end_city_name = rr_end_city_name.replace(')', '').strip()
             
         elif arrival in RR_NO_CITY:
-            rr_terminal = arrival
-            rr_city = RR_NO_CITY[arrival]
-
+            rr_end_terminal_name = arrival
+            rr_end_city_name = RR_NO_CITY[arrival]
         
         elif arrival not in RR_NO_CITY:
-            rr_terminal = f'{arrival} любой ЖД терминал'
-            rr_city = arrival
+            rr_end_terminal_name = f'{arrival} любой ЖД терминал'
+            rr_end_city_name = arrival
         
         
         # Теперь - цены на контейнеры
@@ -151,9 +144,40 @@ def parse_for(df):
       
 
         # Создаем ЖД терминал
-        # InnerRRTerminal.objects.create(
-        #     name=
-        # )
+        for pod in current_pods:
+
+            # Получаем морской терминал и город
+            terminal = get_object_or_404(SeaEndTerminal, name=pod)
+            city = terminal.local_hub_city
+
+            # Создаем ЖД терминал отправки - он назван, как морской
+            rr_start_terminal = InnerRRTerminal.objects.get_or_create(
+                name=pod,
+                defaults={'city': city}
+            )
+
+            # Конечный ЖД терминал
+            if rr_end_city_name
+            rr_end_city = LocalHubCity.objects.get_or_create(
+
+            )
+            # rr_end_terminal = InnerRRTerminal.objects.get_or_create(
+            #     name=rr_end_terminal_name,
+            #     defaults={'city': rr_end_city_name}
+            # )
+
+            # new_rate = InnerRRRate.objects.create(
+            #     start_terminal=rr_start_terminal,
+            #     end_terminal=rr_end_terminal,
+            #     rate_20_24=rate_20ft_24t,
+            #     rate_20_28=rate_20ft_28t,
+            #     rate_40=rate_40ft,
+            #     line=carrier,
+            #     is_by_wagon=is_by_wagon,
+            #     thc=terminal_cost
+            # )
+
+
     return sheet_errors
 
 

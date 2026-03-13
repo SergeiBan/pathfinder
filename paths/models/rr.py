@@ -39,7 +39,7 @@ class ForeignRRStartTerminal(models.Model):
 
 
 class InnerRRTerminal(models.Model):
-    name = models.CharField('Внутренний ЖД терминал', max_length=32, unique=True)
+    name = models.CharField('Внутренний ЖД терминал', max_length=64, unique=True)
     city = models.ForeignKey(LocalHubCity, verbose_name='Город ЖД терминала', on_delete=models.CASCADE, related_name='rr_terminals')
 
     def __str__(self):
@@ -71,9 +71,12 @@ class InnerRRRate(models.Model):
     end_terminal = models.ForeignKey(InnerRRTerminal, verbose_name='ЖД терминал прибытия', on_delete=models.CASCADE, related_name='inner_rates_incoming')
     container = models.CharField('Тип КТК', max_length=16, choices=constants.CONTAINER_OPTIONS)
     rate = models.DecimalField('Стоимость', max_digits=9, decimal_places=2)
-    rate_20 = models.DecimalField('Стоимость за 20ft, $', max_digits=9, decimal_places=2, null=True, blank=True)
+    rate_20_24 = models.DecimalField('Стоимость за 20ft до 24т, $', max_digits=9, decimal_places=2, null=True, blank=True)
+    rate_20_28 = models.DecimalField('Стоимость за 20ft 24-28т, $', max_digits=9, decimal_places=2, null=True, blank=True)
     rate_40 = models.DecimalField('Стоимость за 40ft, $', max_digits=9, decimal_places=2, null=True, blank=True)
     line = models.ForeignKey('SeaLine', verbose_name='Линия', on_delete=models.CASCADE, related_name='inner_rr_rates', null=True, blank=True)
+    is_by_wagon = models.BooleanField('Повагонная отправка', default=False)
+    thc = models.DecimalField('Терминальные расходы', max_digits=9, decimal_places=2)
 
     def _check_for_line(self):
         if self.line:
