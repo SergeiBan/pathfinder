@@ -90,18 +90,18 @@ def parse_for(df):
             is_by_wagon = True
         if '(' in arrival: # Строчка включает ЖД терминал и город
             rr_end_terminal_name, rr_end_city_name = arrival.split('(')
-            rr_end_terminal_name = rr_end_terminal_name.strip()
-            rr_end_city_name = rr_end_city_name.replace(')', '').strip()
+            rr_end_terminal_name = rr_end_terminal_name.strip().upper()
+            rr_end_city_name = rr_end_city_name.replace(')', '').strip().upper()
 
-            if rr_end_terminal_name.upper() not in ACCEPTABLE_INNER_RR:
+            if rr_end_terminal_name not in ACCEPTABLE_INNER_RR:
                 sheet_errors.append(f'Неизвестный ЖД терминал прибытия: {rr_end_terminal_name}')
                 continue
         else: # Если в строчке - только город, а ЖД терминал не указан
-            rr_end_terminal_name = f'любой ЖД терминал {arrival}'
-            rr_end_city_name = arrival
+            rr_end_terminal_name = f'любой ЖД терминал {arrival.upper()}'
+            rr_end_city_name = arrival.upper()
         
         # Проверяем, что ЖД терминал и город - допустимые. Иначе нужно их проверить вручную
-        if rr_end_city_name.upper() not in ACCEPTABLE_LOCAL_HUBS:
+        if rr_end_city_name not in ACCEPTABLE_LOCAL_HUBS:
                 sheet_errors.append(f'Неизвестный город ЖД терминала прибытия: {rr_end_city_name}')
                 continue
         
