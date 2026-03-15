@@ -1,4 +1,7 @@
-from .models import CORRECT_PODS, RR_NO_CITY, InnerRRRate, InnerRRTerminal, SeaEndTerminal, LocalHubCity
+from .models import (
+    CORRECT_PODS, RR_NO_CITY, InnerRRRate, InnerRRTerminal, SeaEndTerminal,
+    LocalHubCity, ACCEPTABLE_INNER_RR, ACCEPTABLE_LOCAL_HUBS
+)
 from django.shortcuts import get_object_or_404
 from decimal import Decimal
 
@@ -85,18 +88,22 @@ def parse_for(df):
         arrival = row[2].strip()
         if '*' in arrival:
             is_by_wagon = True
-        if '(' in arrival:
+        if '(' in arrival: # Строчка включает ЖД терминал и город
             rr_end_terminal_name, rr_end_city_name = arrival.split('(')
             rr_end_terminal_name = rr_end_terminal_name.strip()
             rr_end_city_name = rr_end_city_name.replace(')', '').strip()
-            
-        elif arrival in RR_NO_CITY:
-            rr_end_terminal_name = arrival
-            rr_end_city_name = RR_NO_CITY[arrival]
-        
-        elif arrival not in RR_NO_CITY:
-            rr_end_terminal_name = f'{arrival} любой ЖД терминал'
+
+            if rr_end_terminal_name.upper() not in ACCEPTABLE_INNER_RR:
+                sheet_errors.append(f'Неизвестный ЖД терминал прибытия: {rr_end_terminal_name}')
+                continue
+        else: # Если в строчке - только город, а ЖД терминал не указан
+            rr_end_terminal_name = f'любой ЖД терминал {arrival}'
             rr_end_city_name = arrival
+        
+        # Проверяем, что ЖД терминал и город - допустимые. Иначе нужно их проверить вручную
+        if rr_end_city_name.upper() not in ACCEPTABLE_LOCAL_HUBS:
+                sheet_errors.append(f'Неизвестный город ЖД терминала прибытия: {rr_end_city_name}')
+                continue
         
         
         # Теперь - цены на контейнеры
@@ -157,10 +164,12 @@ def parse_for(df):
             )
 
             # Конечный ЖД терминал
-            if rr_end_city_name
-            rr_end_city = LocalHubCity.objects.get_or_create(
+            
+            
 
-            )
+            # rr_end_city = LocalHubCity.objects.get_or_create(
+
+            # )
             # rr_end_terminal = InnerRRTerminal.objects.get_or_create(
             #     name=rr_end_terminal_name,
             #     defaults={'city': rr_end_city_name}
