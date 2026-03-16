@@ -22,6 +22,18 @@ ACCEPTABLE_LOCAL_HUBS = [
 ]
 
 
+SEA_POINTS = {
+    'Nakhodka': {
+        'VOSTOCHNY (VRANGEL BAY)': ['VRANGEL BAY', 'VOSTOCHNY', 'VRANGEL']
+    },
+    'VLADIVOSTOK': {
+        'PACIFIC LOGISTIC': ['PL', 'VLADIVOSTOK (PL)'],
+        'VLADIVOSTOK COMMERCIAL PORT': ['VLADIVOSTOK COMMERCIAL'],
+        'VLADIVOSTOK (VMPP)': ['VLADIVOSTOK (VMPP)']
+    }
+    
+}
+
 CORRECT_PODS = {
     'Vostochny (VRANGEL BAY)': ['VRANGEL BAY', 'VOSTOCHNY', 'VRANGEL'],
     'Pacific Logistic': ['PL', 'VLADIVOSTOK (PL)'],
