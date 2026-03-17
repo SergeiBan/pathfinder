@@ -1,5 +1,5 @@
 from .models import (
-    CORRECT_PODS, RR_NO_CITY, InnerRRRate, InnerRRTerminal, SeaEndTerminal,
+    RR_NO_CITY, InnerRRRate, InnerRRTerminal, SeaEndTerminal,
     LocalHubCity, ACCEPTABLE_INNER_RR, ACCEPTABLE_LOCAL_HUBS, SEA_POINTS, CARRIERS
 )
 from django.shortcuts import get_object_or_404
@@ -37,7 +37,7 @@ def get_guard_price(cell, sheet_errors):
             try:
                 guard_price = Decimal(cell)
             except:
-                sheet_errors.append(f'Цена на охрану ЖД 20фт - в неизвестном формате {cell}')
+                sheet_errors.append(f'Цена на охрану ЖД - в неизвестном формате {cell}')
         
         return guard_price
 
@@ -93,24 +93,23 @@ def parse_for(df):
         current_pods = correct_pods or english_pod
         
         # Берем ЖД терминал прибытия
-        arrival = row[2].strip()
+        arrival = row[2].strip().upper()
         if '*' in arrival:
             is_by_wagon = True
+            arrival = arrival.replace('*', '')
         if '(' in arrival: # Строчка включает ЖД терминал и город
             rr_end_terminal_name, rr_end_city_name = arrival.split('(')
-            rr_end_terminal_name = rr_end_terminal_name.strip().upper()
-            rr_end_city_name = rr_end_city_name.replace(')', '').strip().upper()
-            if '*' in rr_end_city_name:
-                rr_end_city_name = rr_end_city_name.replace('*', '')
+            rr_end_terminal_name = rr_end_terminal_name.strip()
+            rr_end_city_name = rr_end_city_name.replace(')', '').strip()
 
             if rr_end_terminal_name not in ACCEPTABLE_INNER_RR:
                 sheet_errors.append(f'Неизвестный ЖД терминал прибытия: {rr_end_terminal_name}')
                 continue
         else: # Если в строчке - только город, а ЖД терминал не указан
-            rr_end_terminal_name = f'любой ЖД терминал {arrival.upper()}'
-            rr_end_city_name = arrival.upper()
+            rr_end_terminal_name = f'любой ЖД терминал {arrival}'
+            rr_end_city_name = arrival
         
-        # Проверяем, что ЖД терминал и город - допустимые. Иначе нужно их проверить вручную
+        # Проверяем, что ЖД город прибытия допустимый. Иначе нужно его исправить/добавить
         if rr_end_city_name not in ACCEPTABLE_LOCAL_HUBS:
                 sheet_errors.append(f'Неизвестный город ЖД терминала прибытия: {rr_end_city_name}')
                 continue
@@ -134,12 +133,15 @@ def parse_for(df):
                 rate_40ft = Decimal(row[5])
             except:
                 sheet_errors.append(f'Цена на ЖД 40фт - не десятичное число {row[5]}, {type(row[5])}')
+        if not (row[3] or row[4] or row[5]):
+            continue
 
         # Терминальные расходы
         try:
             terminal_cost = Decimal(row[6])
         except:
-            return ValueError('Терминальные расходы в неверном формате')
+            sheet_errors.append(f'Терминальные расходы в неверном формате: {row[6]}')
+            continue
         
         # Охрана
         guard_20ft = get_guard_price(row[7], sheet_errors)
@@ -174,12 +176,12 @@ def parse_for(df):
             )
 
             # Конечный ЖД терминал
-            
-            
+            rr_end_city = LocalHubCity.objects.get_or_create(
+                name=rr_end_city_name,
+                defaults={}
+            )
 
-            # rr_end_city = LocalHubCity.objects.get_or_create(
 
-            # )
             # rr_end_terminal = InnerRRTerminal.objects.get_or_create(
             #     name=rr_end_terminal_name,
             #     defaults={'city': rr_end_city_name}

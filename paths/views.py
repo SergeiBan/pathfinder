@@ -7,7 +7,7 @@ from .models import (
 from .utils import (
     get_line_mm_rates, get_agent_mm_rates, find_seapath, find_all_seapaths, get_pol,
     get_carrier, get_pods, get_etd, get_container_prices, make_dates, get_conversion,
-    check_ports, check_agent
+    check_agent
 )
 from django.db.models import F
 from django.http import Http404
@@ -187,7 +187,7 @@ def file_upload(request):
                         # В колонке E (пятая) - морские терминалы прибытия
                         POD_col = row[4]
                         if isinstance(POD_col, str):
-                            pods = get_pods(POD_col, sheet_errors)
+                            pods = get_pods(POD_col)
                         
                         # В колонке F (седьмая) - ETD
                         year = datetime.date.today().year

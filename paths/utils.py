@@ -192,7 +192,8 @@ def get_carrier(second_col):
     return carrier
 
 
-def get_pods(pod_col, sheet_errors):
+def get_pods(pod_col):
+    sheet_errors = []
     pods = None
     if '&' in pod_col:
         pod_col = pod_col.split('&')
@@ -308,14 +309,6 @@ def get_conversion(col_conversion):
         return col_conversion
     else:
         raise ValueError('Ставка конвертации не десятичное число')
-
-
-def check_ports():
-    for p in PORTS:
-        obj, created = LocalHubCity.objects.get_or_create(
-        name=p,
-        defaults={}
-    )
         
 
 def check_agent(agent):

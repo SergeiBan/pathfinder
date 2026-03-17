@@ -9,6 +9,6 @@ from .rr import (
 from .calculations import SeaCalculation, RRCalculation, SeaRRCalculation, FileUpload
 
 from .constants import (
-    PORTS, ACCEPTABLE_POLS, CORRECT_PODS, RR_NO_CITY, ACCEPTABLE_INNER_RR,
+    PORTS, ACCEPTABLE_POLS, RR_NO_CITY, ACCEPTABLE_INNER_RR,
     ACCEPTABLE_LOCAL_HUBS, SEA_POINTS, CARRIERS
 )

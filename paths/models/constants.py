@@ -23,29 +23,21 @@ ACCEPTABLE_LOCAL_HUBS = [
 
 
 SEA_POINTS = {
-    'NAKHODKA': {
+    'НАХОДКА': {
         'VOSTOCHNY (VRANGEL BAY)': ['VRANGEL BAY', 'VOSTOCHNY', 'VRANGEL', 'VOSTOCHNY (VRANGEL BAY)'],
         'NAKHODKA': ['NAKHODKA'],
         'ASTAFYEVA': ['ASTAFYEVA'],
         'PPK-1': ['PPK-1']
     },
-    'VLADIVOSTOK': {
+    'ВЛАДИВОСТОK': {
         'PACIFIC LOGISTIC': ['PL', 'VLADIVOSTOK (PL)', 'PACIFIC LOGISTIC'],
         'VLADIVOSTOK COMMERCIAL PORT': ['VLADIVOSTOK COMMERCIAL', 'VLADIVOSTOK COMMERCIAL PORT'],
         'VLADIVOSTOK (VMPP)': ['VLADIVOSTOK (VMPP)', 'VMPP'],
         'VLADIVOSTOK FISH PORT': ['FISH PORT', 'VLADIVOSTOK FISH PORT']
-    }
+    },
 }
 
 CARRIERS = ['NECOLINE', 'TFL', 'LOGOPER', 'MSC', 'EUROSIB']
-
-CORRECT_PODS = {
-    'Vostochny (VRANGEL BAY)': ['VRANGEL BAY', 'VOSTOCHNY', 'VRANGEL'],
-    'Pacific Logistic': ['PL', 'VLADIVOSTOK (PL)'],
-    'Vladivostok Commercial Port': ['VLADIVOSTOK COMMERCIAL'],
-    'Vladivostok (VMPP)': ['VLADIVOSTOK (VMPP)']
-}
-
 
 PORTS = {
     'Vladivostok': [
@@ -117,6 +109,7 @@ ACCEPTABLE_INNER_RR = [
     'ОРЕХОВО-ЗУЕВО',
 
 ]
+
 
 
 RR_NO_CITY = {
