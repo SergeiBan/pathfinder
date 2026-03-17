@@ -1,16 +1,24 @@
 from .models import (
     CORRECT_PODS, RR_NO_CITY, InnerRRRate, InnerRRTerminal, SeaEndTerminal,
-    LocalHubCity, ACCEPTABLE_INNER_RR, ACCEPTABLE_LOCAL_HUBS
+    LocalHubCity, ACCEPTABLE_INNER_RR, ACCEPTABLE_LOCAL_HUBS, SEA_POINTS, CARRIERS
 )
 from django.shortcuts import get_object_or_404
 from decimal import Decimal
 
 
-def get_correct_pod(english_pod):
-    for k, v in CORRECT_PODS.items():
-            if english_pod.upper() in v:
-                return k
-    return english_pod
+def get_correct_pod(english_pod, sheet_errors):
+    for city, ports in SEA_POINTS.items():
+        for correct, arbitrary in ports.items():
+            if english_pod in arbitrary:
+                return correct, city
+    sheet_errors.append(f'Морской терминал {english_pod} не найден')
+
+
+def get_carrier(carrier):
+    for c in CARRIERS:
+        if c == carrier:
+            return c
+    raise ValueError(f'Линия {carrier} не найден')
 
 
 def get_guard_price(cell, sheet_errors):
@@ -62,25 +70,25 @@ def parse_for(df):
 
         # Морские порты без линии, только один порт
         if row[0] == row[0] and ':' not in row[0]:
-            english_pod = row[0].split('\n')[1].strip()
-            english_pod = [get_correct_pod(english_pod)]
-
+            english_pod = row[0].split('\n')[1].strip().upper()
+            english_pod, city = get_correct_pod(english_pod, sheet_errors)
+            english_pod = [english_pod]
             
         # Морские порты с линией
         elif row[0] == row[0] and ':' in row[0]:
-            english_pod = row[0].split('\n')[1].strip()
-            carrier = row[0].split(':')[0].strip()
-
+            english_pod = row[0].split('\n')[1].strip().upper()
+            
             # Портов может быть несколько
             if '/' in english_pod:
                 raw_pods = english_pod.split('/')
                 pods = [p.strip() for p in raw_pods]
                 correct_pods = []
                 for p in pods:
-                    correct_pod = get_correct_pod(p)
+                    correct_pod, city = get_correct_pod(p, sheet_errors)
                     correct_pods.append(correct_pod)
             else:
-                english_pod = [get_correct_pod(english_pod)]
+                english_pod, city = get_correct_pod(english_pod, sheet_errors)
+                english_pod = [english_pod]
 
         current_pods = correct_pods or english_pod
         
@@ -92,6 +100,8 @@ def parse_for(df):
             rr_end_terminal_name, rr_end_city_name = arrival.split('(')
             rr_end_terminal_name = rr_end_terminal_name.strip().upper()
             rr_end_city_name = rr_end_city_name.replace(')', '').strip().upper()
+            if '*' in rr_end_city_name:
+                rr_end_city_name = rr_end_city_name.replace('*', '')
 
             if rr_end_terminal_name not in ACCEPTABLE_INNER_RR:
                 sheet_errors.append(f'Неизвестный ЖД терминал прибытия: {rr_end_terminal_name}')

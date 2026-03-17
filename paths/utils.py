@@ -1,6 +1,9 @@
 from datetime import date
 from django.db.models import F
-from .models import SeaStartTerminal, SeaLine, SeaETD, SeaEndTerminal, LocalHubCity, PORTS, ForeignAgent
+from .models import (
+    SeaStartTerminal, SeaLine, SeaETD, SeaEndTerminal, LocalHubCity,
+    PORTS, ForeignAgent, SEA_POINTS
+)
 import sys, datetime
 from django.shortcuts import get_object_or_404
 
@@ -164,8 +167,8 @@ def get_agent_mm_rates(agent_rates, InnerRRRate, end_terminals, container, end_c
 def get_pol(first_col):
     
     sea_start = first_col.split('\n')
-
-    POL = sea_start[0].strip()
+    # Добавить проверку по списку
+    POL = sea_start[0].strip().upper()
     if len(sea_start) > 2:
         drop_off = ' '.join(sea_start[1:]).strip()
     else:
@@ -180,7 +183,7 @@ def get_pol(first_col):
 
 
 def get_carrier(second_col):
-    carrier = second_col.strip()
+    carrier = second_col.strip().upper()
     obj, created = SeaLine.objects.get_or_create(
         name=carrier,
         defaults={}
@@ -189,46 +192,37 @@ def get_carrier(second_col):
     return carrier
 
 
-def get_pods(pod_col):
+def get_pods(pod_col, sheet_errors):
     pods = None
     if '&' in pod_col:
         pod_col = pod_col.split('&')
-        pods = [p.strip() for p in pod_col]    
+        pods = [p.strip().upper() for p in pod_col]    
     elif '/' in pod_col:
         pod_col = pod_col.split('/')
-        pods = [p.strip() for p in pod_col]
+        pods = [p.strip().upper() for p in pod_col]
     else:
-        pods = [pod_col.strip()]
+        pods = [pod_col.strip().upper()]
 
     result_pods = []
     for p in pods:
-        if p.upper() in ['VRANGEL BAY', 'VOSTOCHNY', 'VRANGEL']:
-            result_pods.append('Vostochny (VRANGEL BAY)')
-        elif p.upper() in ['PL', 'VLADIVOSTOK (PL)']:
-            result_pods.append('Pacific Logistic')
-        elif p.upper() in ['VLADIVOSTOK COMMERCIAL']:
-            result_pods.append('Vladivostok Commercial Port')
-        elif p.upper() in ['VLADIVOSTOK (VMPP)']:
-            result_pods.append('Vladivostok (VMPP)')
-        else:
-            result_pods.append(p)
-
-    city = None
-    for p in result_pods:
-        for k, v in PORTS.items():
-            if p in v:
-                city = k
-        if not city:
-            raise ValueError('Город порта нераспознан')
-    city, created = LocalHubCity.objects.get_or_create(name=city)
+        is_found = False
+        for city, ports in SEA_POINTS.items():
+            for correct, arbitrary in ports.items():
+                if p in arbitrary:
+                    result_pods.append([correct, city])
+                    is_found = True
+        if not is_found:
+            sheet_errors.append(f'Морской терминал {p} не распознан')
+        
     
     created_pods = []
     for p in result_pods:
-        obj, created = SeaEndTerminal.objects.get_or_create(
-        name=p,
-        defaults={'local_hub_city': city or created}
+        city_obj, created_city = LocalHubCity.objects.get_or_create(name=p[1])
+        pod_obj, created_pod = SeaEndTerminal.objects.get_or_create(
+        name=p[0],
+        defaults={'local_hub_city': city_obj or created_city}
     )
-    created_pods.append(obj or created)
+        created_pods.append(pod_obj or created_pod)
 
     return created_pods
 

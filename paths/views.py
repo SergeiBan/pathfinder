@@ -163,8 +163,6 @@ def file_upload(request):
                         for error in sheet_errors:
                             messages.error(request, error)
                     continue
-                    
-                    
                 
                 if sheet_name in ACCEPTABLE_POLS:
                     
@@ -189,7 +187,7 @@ def file_upload(request):
                         # В колонке E (пятая) - морские терминалы прибытия
                         POD_col = row[4]
                         if isinstance(POD_col, str):
-                            pods = get_pods(POD_col)
+                            pods = get_pods(POD_col, sheet_errors)
                         
                         # В колонке F (седьмая) - ETD
                         year = datetime.date.today().year
