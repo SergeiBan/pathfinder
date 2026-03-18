@@ -205,20 +205,20 @@ def file_upload(request):
                         agent = row[13]
                         is_agent = check_agent(agent)
 
-                        sr = SeaRate(
-                            sea_line=sea_line,
-                            sea_start_terminal=POL,
-                            validity=validity_date,
-                            rate_20=rate_20,
-                            rate_40=rate_40,
+                        for pod in pods:
 
-                            conversion=conversion_rate
-                            
-                        )
-                        sr.save()
-                        sr.sea_end_terminal.add(*pods)
-                        if etds:
-                            sr.etd.add(*etds)
+                            sr = SeaRate(
+                                sea_line=sea_line,
+                                sea_start_terminal=POL,
+                                validity=validity_date,
+                                rate_20=rate_20,
+                                rate_40=rate_40,
+                                sea_end_terminal=pod,
+                                conversion=conversion_rate
+                            )
+                            sr.save()
+                            if etds:
+                                sr.etd.add(*etds)
                         
             messages.success(request, 'Файл успешно загружен!')
 

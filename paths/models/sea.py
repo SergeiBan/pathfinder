@@ -115,7 +115,8 @@ class ForeignAgent(models.Model):
 class SeaRate(models.Model):
     sea_line = models.ForeignKey(SeaLine, on_delete=models.CASCADE, related_name='sea_rates')
     sea_start_terminal = models.ForeignKey(SeaStartTerminal, on_delete=models.CASCADE, related_name='sea_rates')
-    sea_end_terminal = models.ManyToManyField(SeaEndTerminal, related_name='sea_rates')
+    # sea_end_terminal = models.ManyToManyField(SeaEndTerminal, related_name='sea_rates')
+    sea_end_terminal = models.ForeignKey(SeaEndTerminal, on_delete=models.CASCADE, related_name='sea_rates')
     etd = models.ManyToManyField(SeaETD, related_name='sea_rates', blank=True)
     validity = models.DateField('Валидность до')
     container = models.CharField('Тип КТК', max_length=16, choices=constants.CONTAINER_OPTIONS)
@@ -126,7 +127,10 @@ class SeaRate(models.Model):
     conversion = models.FloatField(verbose_name='Конвертация, %')
 
     def __str__(self):
-        return f'20ft ${self.rate_20} 40ft ${self.rate_40} {self.sea_line} {self.sea_start_terminal} - {self.sea_end_terminal.all()}'
+        representation = f'20ft ${self.rate_20} 40ft ${self.rate_40} {self.sea_line} {self.sea_start_terminal} - {self.sea_end_terminal}'
+        if self.etd:
+            representation = representation + str(self.etd.all())
+        return representation
     
     class Meta:
         verbose_name = 'Морская ставка'

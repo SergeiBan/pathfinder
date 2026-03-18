@@ -1,5 +1,5 @@
 from datetime import date
-from django.db.models import F
+from django.db.models import F, Q
 from .models import (
     SeaStartTerminal, SeaLine, SeaETD, SeaEndTerminal, LocalHubCity,
     PORTS, ForeignAgent, SEA_POINTS
@@ -79,13 +79,13 @@ def get_line_mm_rates(line_rates, InnerRRRate, end_terminals, container, end_cit
     # Получаем все ЖД ставки из всех морских терминалов прибытия во все ЖД терминалы города доставки
     if container == '20DC':
         rr_rates = InnerRRRate.objects.filter(
-            end_terminal__in=end_terminals,
-            rate_20__isnull=False
+            Q(end_terminal__in=end_terminals) &
+            (Q(rate_20_24__isnull=False) | Q(rate_20_28__isnull=False))
         ).distinct().annotate(truck=F('end_terminal__city__local_truck__price'))
     if container == '40HC':
         rr_rates = InnerRRRate.objects.filter(
-            end_terminal__in=end_terminals,
-            rate_40__isnull=False
+            Q(end_terminal__in=end_terminals) &
+            Q(rate_40__isnull=False)
         ).distinct().annotate(truck=F('end_terminal__city__local_truck__price'))
     
     # Все морские ставки линии сочетаем со всеми ЖД ставками по критериям: город и линия
@@ -128,8 +128,8 @@ def get_agent_mm_rates(agent_rates, InnerRRRate, end_terminals, container, end_c
     # Получаем все ЖД ставки из всех морских терминалов прибытия во все ЖД терминалы города доставки
     if container == '20DC':
         rr_rates = InnerRRRate.objects.filter(
+            Q(rate_20_24__isnull=False) | Q(rate_20_28__isnull=False),
             end_terminal__in=end_terminals,
-            rate_20__isnull=False,
             line__isnull=True
         ).distinct().annotate(truck=F('end_terminal__city__local_truck__price'))
     if container == '40HC':

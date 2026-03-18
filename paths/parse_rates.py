@@ -160,7 +160,6 @@ def parse_for(df):
         except:
             sheet_errors.append(f'FOR Дата обновления - нераспознан формат: {row[10]}')
             continue
-      
 
         # Создаем ЖД терминал
         for pod in current_pods:
@@ -170,33 +169,32 @@ def parse_for(df):
             city = terminal.local_hub_city
 
             # Создаем ЖД терминал отправки - он назван, как морской
-            rr_start_terminal = InnerRRTerminal.objects.get_or_create(
+            rr_start_terminal, created_start_terminal = InnerRRTerminal.objects.get_or_create(
                 name=pod,
                 defaults={'city': city}
             )
 
             # Конечный ЖД терминал
-            rr_end_city = LocalHubCity.objects.get_or_create(
+            rr_end_city, created_end_city = LocalHubCity.objects.get_or_create(
                 name=rr_end_city_name,
                 defaults={}
             )
+            rr_end_terminal, created_end_terminal = InnerRRTerminal.objects.get_or_create(
+                name=rr_end_terminal_name,
+                defaults={'city': rr_end_city or created_end_city}
+            )
 
-
-            # rr_end_terminal = InnerRRTerminal.objects.get_or_create(
-            #     name=rr_end_terminal_name,
-            #     defaults={'city': rr_end_city_name}
-            # )
-
-            # new_rate = InnerRRRate.objects.create(
-            #     start_terminal=rr_start_terminal,
-            #     end_terminal=rr_end_terminal,
-            #     rate_20_24=rate_20ft_24t,
-            #     rate_20_28=rate_20ft_28t,
-            #     rate_40=rate_40ft,
-            #     line=carrier,
-            #     is_by_wagon=is_by_wagon,
-            #     thc=terminal_cost
-            # )
+            new_rate = InnerRRRate.objects.create(
+                start_terminal=rr_start_terminal or created_start_terminal,
+                end_terminal=rr_end_terminal or created_end_city,
+                rate_20_24=rate_20ft_24t or None,
+                rate_20_28=rate_20ft_28t or None,
+                rate_40=rate_40ft or None,
+                line=carrier,
+                is_by_wagon=is_by_wagon,
+                thc=terminal_cost
+            )
+            print(new_rate)
 
 
     return sheet_errors

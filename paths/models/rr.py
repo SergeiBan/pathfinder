@@ -70,7 +70,6 @@ class InnerRRRate(models.Model):
     start_terminal = models.ForeignKey(InnerRRTerminal, verbose_name='ЖД терминал отправки', on_delete=models.CASCADE, related_name='inner_rates_outgoing')
     end_terminal = models.ForeignKey(InnerRRTerminal, verbose_name='ЖД терминал прибытия', on_delete=models.CASCADE, related_name='inner_rates_incoming')
     container = models.CharField('Тип КТК', max_length=16, choices=constants.CONTAINER_OPTIONS)
-    rate = models.DecimalField('Стоимость', max_digits=9, decimal_places=2)
     rate_20_24 = models.DecimalField('Стоимость за 20ft до 24т, $', max_digits=9, decimal_places=2, null=True, blank=True)
     rate_20_28 = models.DecimalField('Стоимость за 20ft 24-28т, $', max_digits=9, decimal_places=2, null=True, blank=True)
     rate_40 = models.DecimalField('Стоимость за 40ft, $', max_digits=9, decimal_places=2, null=True, blank=True)
@@ -87,8 +86,8 @@ class InnerRRRate(models.Model):
     def __str__(self):
         line = self._check_for_line()
         if line:
-             return f'{self.rate} ₽ {line} {self.start_terminal} - {self.end_terminal}'
-        return f'{self.rate} ₽ {self.start_terminal} - {self.end_terminal}'
+             return f'{line} {self.start_terminal} - {self.end_terminal}'
+        return f'{self.start_terminal} - {self.end_terminal}'
     
     class Meta:
         verbose_name = 'Внутренняя ЖД ставка'
