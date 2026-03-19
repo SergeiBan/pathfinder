@@ -10,5 +10,5 @@ from .calculations import SeaCalculation, RRCalculation, SeaRRCalculation, FileU
 
 from .constants import (
     PORTS, ACCEPTABLE_POLS, RR_NO_CITY, ACCEPTABLE_INNER_RR,
-    ACCEPTABLE_LOCAL_HUBS, SEA_POINTS, CARRIERS
+    ACCEPTABLE_LOCAL_HUBS, SEA_POINTS, CARRIERS, ACCEPTABLE_AGENTS
 )

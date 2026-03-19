@@ -194,7 +194,6 @@ def parse_for(df):
                 is_by_wagon=is_by_wagon,
                 thc=terminal_cost
             )
-            print(new_rate)
 
 
     return sheet_errors

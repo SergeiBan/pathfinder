@@ -2,7 +2,7 @@ from datetime import date
 from django.db.models import F, Q
 from .models import (
     SeaStartTerminal, SeaLine, SeaETD, SeaEndTerminal, LocalHubCity,
-    PORTS, ForeignAgent, SEA_POINTS
+    PORTS, ForeignAgent, SEA_POINTS, ACCEPTABLE_AGENTS
 )
 import sys, datetime
 from django.shortcuts import get_object_or_404
@@ -312,7 +312,11 @@ def get_conversion(col_conversion):
         
 
 def check_agent(agent):
-    agents = list(ForeignAgent.objects.values_list('title', flat=True))
-    if agent in agents:
-        return True
-    return False
+    if (isinstance(agent, str)):
+        agent = agent.upper()
+        if agent in ACCEPTABLE_AGENTS:
+            obj, created = ForeignAgent.objects.get_or_create(
+                title=agent, defaults={}
+            )
+            return obj or created
+    return None

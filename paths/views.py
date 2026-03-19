@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from .forms import SeaCalculationForm, RRCalculationForm, SeaRRCalculationForm, UploadForm
 from .models import (
     SeaCalculation, SeaRate, InnerRRRate, LocalHubCity, SeaEndTerminal, InnerRRTerminal,
-    DistantTruckRate, SeaStartTerminal, SeaLine, SeaETD, ACCEPTABLE_POLS
+    DistantTruckRate, SeaStartTerminal, SeaLine, SeaETD, ACCEPTABLE_POLS, ACCEPTABLE_AGENTS
 )
 from .utils import (
     get_line_mm_rates, get_agent_mm_rates, find_seapath, find_all_seapaths, get_pol,
@@ -122,6 +122,8 @@ def sea_rr_calculation(request):
                 sea_end_terminal__in=end_terminals
             ).annotate(truck=F('sea_end_terminal__local_hub_city__local_truck__price'))
 
+        
+
     context = {
         'form': form,
         'direct_sea_rates': direct_sea_rates,
@@ -214,7 +216,8 @@ def file_upload(request):
                                 rate_20=rate_20,
                                 rate_40=rate_40,
                                 sea_end_terminal=pod,
-                                conversion=conversion_rate
+                                conversion=conversion_rate,
+                                agent=is_agent
                             )
                             sr.save()
                             if etds:
