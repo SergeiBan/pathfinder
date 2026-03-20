@@ -67,6 +67,7 @@ def sea_rr_calculation(request):
     if form.is_valid():
         end_city = form.cleaned_data['end_city']
         particular_rr_terminal = form.cleaned_data['rr_end_terminal']
+        gross = form.cleaned_data['gross']
         
         # Если выбран конкретный ЖД терминал прибытия
         if particular_rr_terminal:
@@ -96,10 +97,10 @@ def sea_rr_calculation(request):
         line_sea_rates = sea_rates.filter(agent__isnull=True)
         
         line_rates, line_sea_rr_truck = get_line_mm_rates(
-            line_sea_rates, InnerRRRate, end_terminals, form.cleaned_data['container'], end_city)
+            line_sea_rates, InnerRRRate, end_terminals, form.cleaned_data['container'], end_city, gross)
         
         agent_rates, agent_sea_rr_truck = get_agent_mm_rates(
-            agent_sea_rates, InnerRRRate, end_terminals, form.cleaned_data['container'], end_city)
+            agent_sea_rates, InnerRRRate, end_terminals, form.cleaned_data['container'], end_city, gross)
 
 
         # 3. Вдруг возможен автовывоз из портового города в конечный город

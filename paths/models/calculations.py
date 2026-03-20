@@ -5,11 +5,12 @@ from . import (
     RRETD, RRRate, ForeignRRStartTerminal, InnerRRTerminal, LocalHubCity
 )
 from datetime import date
+from django.core.validators import MaxValueValidator
 
 
 CONTAINER_OPTIONS = (
     ('20DC', '20DC'),
-    ('H0HC', '40HC'),
+    ('40HC', '40HC'),
 )
 
 
@@ -118,8 +119,6 @@ class RRCalculation(models.Model):
         verbose_name = "Расчёт прямого ЖД"
         verbose_name_plural = "Расчёты прямого ЖД"
 
-
-
 class SeaRRCalculation(models.Model):
     sea_start_terminal = models.ForeignKey(SeaStartTerminal, verbose_name='Морской терминал отправки', on_delete=models.CASCADE, related_name='calculations')
     rr_end_terminal = models.ForeignKey(InnerRRTerminal, verbose_name='ЖД терминал прибытия', on_delete=models.CASCADE, related_name='calculations')
@@ -127,7 +126,7 @@ class SeaRRCalculation(models.Model):
     etd_from = models.DateField('Выход от', blank=True, null=True)
     etd_to = models.DateField('Выход до', blank=True, null=True)
     container = models.CharField('Тип КТК', max_length=16, choices=CONTAINER_OPTIONS)
-    gross = models.DecimalField('Брутто', max_digits=20, decimal_places=10)
+    gross = models.DecimalField('Брутто', max_digits=20, decimal_places=10, validators=[MaxValueValidator(28000)])
     is_VTT = models.BooleanField('ВТТ', default=False)
 
 

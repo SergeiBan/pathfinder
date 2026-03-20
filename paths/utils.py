@@ -34,6 +34,8 @@ def find_seapath(sea_start_terminal, sea_end_terminal, container, SeaRate, etd_f
 def find_all_seapaths(sea_start_terminal, container, SeaRate, etd_from=None, etd_to=None):
     today = date.today()
     applicable_rates = None
+    applicable_rates_no_etd = None
+    applicable_rates_with_etd = None
 
     if container == '20DC':
         applicable_rates_no_etd = SeaRate.objects.filter(
@@ -50,7 +52,7 @@ def find_all_seapaths(sea_start_terminal, container, SeaRate, etd_from=None, etd
         applicable_rates_with_etd = SeaRate.objects.filter(
             sea_start_terminal=sea_start_terminal, etd__etd__isnull=False, rate_40__isnull=False
             ).distinct()
-        
+    
     if applicable_rates_no_etd:
         applicable_rates_no_etd = applicable_rates_no_etd.filter(validity__gt=today).distinct()
 
@@ -68,25 +70,40 @@ def find_all_seapaths(sea_start_terminal, container, SeaRate, etd_from=None, etd
         elif etd_from is not None and etd_to is not None:
             applicable_rates_with_etd = applicable_rates_with_etd.filter(etd__etd__gte=etd_from, etd__etd__lte=etd_to).distinct()
     
-    applicable_rates = applicable_rates_no_etd | applicable_rates_with_etd
-    return applicable_rates
+    if applicable_rates_no_etd and applicable_rates_with_etd:
+        return applicable_rates_no_etd | applicable_rates_with_etd
+    return applicable_rates_no_etd or applicable_rates_with_etd
 
 
-def get_line_mm_rates(line_rates, InnerRRRate, end_terminals, container, end_city):
+def get_inner_rr_rates(container, InnerRRRate, end_terminals, gross, is_agent_rate):
+    # Получаем все ЖД ставки из всех морских терминалов прибытия во все ЖД терминалы города доставки
+    rr_rates = None
+    if container == '20DC' and gross <= 24000:
+        rr_rates = InnerRRRate.objects.filter(
+            Q(end_terminal__in=end_terminals) &
+            Q(rate_20_24__isnull=False),
+            line__isnull=is_agent_rate
+        ).distinct().annotate(truck=F('end_terminal__city__local_truck__price'))
+    elif container == '20DC' and gross <= 28000:
+        rr_rates = InnerRRRate.objects.filter(
+            Q(end_terminal__in=end_terminals) & Q(rate_20_28__isnull=False), line__isnull=is_agent_rate
+        ).distinct().annotate(truck=F('end_terminal__city__local_truck__price'))
+
+    if container == '40HC':
+        rr_rates = InnerRRRate.objects.filter(
+            Q(end_terminal__in=end_terminals) &
+            Q(rate_40__isnull=False),
+            line__isnull=is_agent_rate
+        ).distinct().annotate(truck=F('end_terminal__city__local_truck__price'))
+    
+    return rr_rates
+
+def get_line_mm_rates(line_rates, InnerRRRate, end_terminals, container, end_city, gross):
     sea_to_rr = []
     sea_rr_truck = []
 
     # Получаем все ЖД ставки из всех морских терминалов прибытия во все ЖД терминалы города доставки
-    if container == '20DC':
-        rr_rates = InnerRRRate.objects.filter(
-            Q(end_terminal__in=end_terminals) &
-            (Q(rate_20_24__isnull=False) | Q(rate_20_28__isnull=False))
-        ).distinct().annotate(truck=F('end_terminal__city__local_truck__price'))
-    if container == '40HC':
-        rr_rates = InnerRRRate.objects.filter(
-            Q(end_terminal__in=end_terminals) &
-            Q(rate_40__isnull=False)
-        ).distinct().annotate(truck=F('end_terminal__city__local_truck__price'))
+    rr_rates = get_inner_rr_rates(container, InnerRRRate, end_terminals, gross, is_agent_rate=False)
     
     # Все морские ставки линии сочетаем со всеми ЖД ставками по критериям: город и линия
     for sea_rate in line_rates:
@@ -121,23 +138,12 @@ def get_line_mm_rates(line_rates, InnerRRRate, end_terminals, container, end_cit
     return (sea_to_rr, sea_rr_truck)
     
 
-def get_agent_mm_rates(agent_rates, InnerRRRate, end_terminals, container, end_city):
+def get_agent_mm_rates(agent_rates, InnerRRRate, end_terminals, container, end_city, gross):
     sea_to_rr = []
     sea_rr_truck = []
 
     # Получаем все ЖД ставки из всех морских терминалов прибытия во все ЖД терминалы города доставки
-    if container == '20DC':
-        rr_rates = InnerRRRate.objects.filter(
-            Q(rate_20_24__isnull=False) | Q(rate_20_28__isnull=False),
-            end_terminal__in=end_terminals,
-            line__isnull=True
-        ).distinct().annotate(truck=F('end_terminal__city__local_truck__price'))
-    if container == '40HC':
-        rr_rates = InnerRRRate.objects.filter(
-            end_terminal__in=end_terminals,
-            rate_40__isnull=False,
-            line__isnull=True
-        ).distinct().annotate(truck=F('end_terminal__city__local_truck__price'))
+    rr_rates = get_inner_rr_rates(container, InnerRRRate, end_terminals, gross, is_agent_rate=True)
     
     for sea_rate in agent_rates:
             for rr_rate in rr_rates:
