@@ -55,16 +55,16 @@ PORTS = {
 }
 
 ACCEPTABLE_POLS = [
-    'Shanghai',
-    'Qingdao',
-    'Tianjin',
-    'Ningbo',
-    'Dalian',
-    'Xiamen',
-    'Nansha',
-    'Yantian',
-    'Shekou',
-    'Busan'
+    'SHANGHAI',
+    'QINGDAO',
+    'TIANJIN',
+    'NINGBO',
+    'DALIAN',
+    'XIAMEN',
+    'NANSHA',
+    'YANTIAN',
+    'SHEKOU',
+    'BUSAN'
 ]
 
 ACCEPTABLE_INNER_RR = [

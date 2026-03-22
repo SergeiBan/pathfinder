@@ -1,6 +1,7 @@
 from .models import (
     RR_NO_CITY, InnerRRRate, InnerRRTerminal, SeaEndTerminal,
-    LocalHubCity, ACCEPTABLE_INNER_RR, ACCEPTABLE_LOCAL_HUBS, SEA_POINTS, CARRIERS
+    LocalHubCity, ACCEPTABLE_INNER_RR, ACCEPTABLE_LOCAL_HUBS, SEA_POINTS, CARRIERS,
+    ACCEPTABLE_POLS, SeaStartTerminal
 )
 from django.shortcuts import get_object_or_404
 from decimal import Decimal
@@ -62,6 +63,7 @@ def parse_for(df):
         rr_end_terminal_name = None
         rr_end_city_name = None
         terminal_cost = None
+        pol = None
 
         if current_pods is None and row[0] != row[0]: # Это верхняя строчка
             continue
@@ -91,6 +93,14 @@ def parse_for(df):
                 english_pod = [english_pod]
 
         current_pods = correct_pods or english_pod
+
+        # Проверяем, указан ли порт отправки, для особо строгих линейщиков
+        if isinstance(row[1], str):
+            possible_pol = row[1].strip().upper()
+            if possible_pol not in ACCEPTABLE_POLS:
+                sheet_errors.append(f'Неизвестный POL в ЖД ставке: {possible_pol}')
+                continue
+            pol_obj, pol_created = SeaStartTerminal.objects.get_or_create(name=possible_pol, defaults={})
         
         # Берем ЖД терминал прибытия
         arrival = row[2].strip().upper()

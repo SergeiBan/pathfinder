@@ -243,7 +243,7 @@ MONTHS = {
 }
 
 
-def make_dates(wierd_dates, year):
+def make_dates(wierd_dates, year, sheet_errors=None):
 
     new_dates = []
     for wierd_date in wierd_dates:
@@ -253,7 +253,12 @@ def make_dates(wierd_dates, year):
             wierd_date = wierd_date.split('.')
         if 'NSH' in wierd_date[0]:
             wierd_date[0] = wierd_date[0][3:]
-        day = int(wierd_date[0].strip())
+
+        try:
+            day = int(wierd_date[0].strip())
+        except:
+            sheet_errors.append(f'Дата в неизвестном формате: {wierd_date[0]}')
+            return 'error'
         month = MONTHS[wierd_date[1].strip()]
         new_date = datetime.date(year, month, day)
         new_dates.append(new_date)
@@ -314,7 +319,7 @@ def get_conversion(col_conversion):
     if (isinstance(col_conversion, float)):
         return col_conversion
     else:
-        raise ValueError('Ставка конвертации не десятичное число')
+        raise ValueError(f'Ставка конвертации не десятичное число {col_conversion}')
         
 
 def check_agent(agent):

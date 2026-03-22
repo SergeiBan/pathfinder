@@ -2,7 +2,8 @@ from django.shortcuts import render, redirect
 from .forms import SeaCalculationForm, RRCalculationForm, SeaRRCalculationForm, UploadForm
 from .models import (
     SeaCalculation, SeaRate, InnerRRRate, LocalHubCity, SeaEndTerminal, InnerRRTerminal,
-    DistantTruckRate, SeaStartTerminal, SeaLine, SeaETD, ACCEPTABLE_POLS, ACCEPTABLE_AGENTS
+    DistantTruckRate, SeaStartTerminal, SeaLine, SeaETD, ACCEPTABLE_POLS, ACCEPTABLE_AGENTS,
+    
 )
 from .utils import (
     get_line_mm_rates, get_agent_mm_rates, find_seapath, find_all_seapaths, get_pol,
@@ -151,6 +152,8 @@ def file_upload(request):
         SeaEndTerminal.objects.all().delete()
         SeaETD.objects.all().delete()
         LocalHubCity.objects.all().delete()
+        SeaRate.objects.all().delete()
+        InnerRRRate.objects.all().delete()
 
         POL = None
 
@@ -167,7 +170,8 @@ def file_upload(request):
                             messages.error(request, error)
                     continue
                 
-                if sheet_name in ACCEPTABLE_POLS:
+                sheet_errors = []
+                if sheet_name.upper() in ACCEPTABLE_POLS:
                     
                     for row in df.itertuples(index=False):
 
@@ -199,7 +203,9 @@ def file_upload(request):
 
                         # В десятой колонке - валидность
                         validity_col = row[9]
-                        validity_date = make_dates([validity_col], year)[0]
+                        validity_date = make_dates([validity_col], year, sheet_errors)[0]
+                        if validity_date == 'error':
+                            continue
 
                         # В колонке 12 - ставка конвертации
                         conversion_rate = get_conversion(row[11])
@@ -223,6 +229,9 @@ def file_upload(request):
                             sr.save()
                             if etds:
                                 sr.etd.add(*etds)
+                if sheet_errors:
+                    for error in sheet_errors:
+                        messages.error(request, error)
                         
             messages.success(request, 'Файл успешно загружен!')
 
