@@ -5,7 +5,6 @@ from .models import (
     PORTS, ForeignAgent, SEA_POINTS, ACCEPTABLE_AGENTS
 )
 import sys, datetime
-from django.shortcuts import get_object_or_404
 
 
 def find_seapath(sea_start_terminal, sea_end_terminal, container, SeaRate, etd_from=None, etd_to=None):
@@ -108,6 +107,8 @@ def get_line_mm_rates(line_rates, InnerRRRate, end_terminals, container, end_cit
     # Все морские ставки линии сочетаем со всеми ЖД ставками по критериям: город и линия
     for sea_rate in line_rates:
             for rr_rate in rr_rates:
+                # Проверяем, что эта ЖД ставка не особо строгих линейщиков
+
                 if (
                       sea_rate.sea_end_terminal.local_hub_city == rr_rate.start_terminal.city
                       and sea_rate.sea_line == rr_rate.line
@@ -247,6 +248,10 @@ def make_dates(wierd_dates, year, sheet_errors=None):
 
     new_dates = []
     for wierd_date in wierd_dates:
+        if isinstance(wierd_date, datetime.date):
+            new_dates.append(wierd_date)
+            continue
+
         if '-' in wierd_date:
             wierd_date = wierd_date.split('-')
         elif '.' in wierd_date:
@@ -259,6 +264,7 @@ def make_dates(wierd_dates, year, sheet_errors=None):
         except:
             sheet_errors.append(f'Дата в неизвестном формате: {wierd_date[0]}')
             return 'error'
+        
         month = MONTHS[wierd_date[1].strip()]
         new_date = datetime.date(year, month, day)
         new_dates.append(new_date)

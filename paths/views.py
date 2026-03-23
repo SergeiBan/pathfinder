@@ -162,13 +162,6 @@ def file_upload(request):
             all_sheets = pd.read_excel(uploaded_file, sheet_name=None)
 
             for sheet_name, df in all_sheets.items():
-
-                if sheet_name == 'FOR':
-                    sheet_errors = parse_for(df)
-                    if sheet_errors:
-                        for error in sheet_errors:
-                            messages.error(request, error)
-                    continue
                 
                 sheet_errors = []
                 if sheet_name.upper() in ACCEPTABLE_POLS:
@@ -232,10 +225,16 @@ def file_upload(request):
                 if sheet_errors:
                     for error in sheet_errors:
                         messages.error(request, error)
+                
+                if sheet_name == 'FOR':
+                    sheet_errors = parse_for(df)
+                    if sheet_errors:
+                        for error in sheet_errors:
+                            messages.error(request, error)
+                    continue
                         
             messages.success(request, 'Файл успешно загружен!')
 
-            # return redirect('paths:sea_rr_calculation')
     else:
         form = UploadForm()
     

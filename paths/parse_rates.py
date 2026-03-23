@@ -1,7 +1,7 @@
 from .models import (
     RR_NO_CITY, InnerRRRate, InnerRRTerminal, SeaEndTerminal,
     LocalHubCity, ACCEPTABLE_INNER_RR, ACCEPTABLE_LOCAL_HUBS, SEA_POINTS, CARRIERS,
-    ACCEPTABLE_POLS, SeaStartTerminal
+    ACCEPTABLE_POLS, SeaStartTerminal, SeaLine
 )
 from django.shortcuts import get_object_or_404
 from decimal import Decimal
@@ -63,7 +63,8 @@ def parse_for(df):
         rr_end_terminal_name = None
         rr_end_city_name = None
         terminal_cost = None
-        pol = None
+        pol_obj, pol_created = None, None
+        carrier_obj, carrier_created = None, None
 
         if current_pods is None and row[0] != row[0]: # Это верхняя строчка
             continue
@@ -78,7 +79,12 @@ def parse_for(df):
             
         # Морские порты с линией
         elif row[0] == row[0] and ':' in row[0]:
-            english_pod = row[0].split('\n')[1].strip().upper()
+            english_pod = row[0].split('\n')[1].strip().upper() # Порт
+            carrier = row[0].split('\n')[0].strip().upper().replace(':', '') # Линия
+            if carrier not in CARRIERS:
+                sheet_errors.append(f'Линия {carrier} неизвестна')
+                continue
+            carrier_obj, carrier_created = SeaLine.objects.get_or_create(name=carrier, defaults={})
             
             # Портов может быть несколько
             if '/' in english_pod:
@@ -196,13 +202,14 @@ def parse_for(df):
 
             new_rate = InnerRRRate.objects.create(
                 start_terminal=rr_start_terminal or created_start_terminal,
-                end_terminal=rr_end_terminal or created_end_city,
+                end_terminal=rr_end_terminal or created_end_terminal,
                 rate_20_24=rate_20ft_24t or None,
                 rate_20_28=rate_20ft_28t or None,
                 rate_40=rate_40ft or None,
-                line=carrier,
+                line=carrier_obj or carrier_created,
                 is_by_wagon=is_by_wagon,
-                thc=terminal_cost
+                thc=terminal_cost,
+                pol=pol_obj or pol_created
             )
 
 

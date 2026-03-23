@@ -124,6 +124,8 @@ class SeaRate(models.Model):
     intermediate = models.ForeignKey(SeaStartTerminal, on_delete=models.CASCADE, null=True, blank=True, related_name='start_point_rates')
     agent = models.ForeignKey(ForeignAgent, on_delete=models.CASCADE, null=True, blank=True, related_name='agents')
     conversion = models.FloatField(verbose_name='Конвертация, %')
+    
+
 
     def __str__(self):
         representation = f'20ft ${self.rate_20} 40ft ${self.rate_40} {self.sea_line} {self.sea_start_terminal} - {self.sea_end_terminal}'

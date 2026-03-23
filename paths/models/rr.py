@@ -1,6 +1,6 @@
 from django.db import models
 from django.db.models import Avg, Min
-from . import constants, LocalHubCity
+from . import constants, LocalHubCity, SeaStartTerminal
 
 class RRETD(models.Model):
     etd = models.DateField('Дата выхода ЖД')
@@ -76,6 +76,7 @@ class InnerRRRate(models.Model):
     line = models.ForeignKey('SeaLine', verbose_name='Линия', on_delete=models.CASCADE, related_name='inner_rr_rates', null=True, blank=True)
     is_by_wagon = models.BooleanField('Повагонная отправка', default=False)
     thc = models.DecimalField('Терминальные расходы', max_digits=9, decimal_places=2)
+    pol = models.ForeignKey(SeaStartTerminal, related_name='inner_rr_rates', null=True, blank=True, on_delete=models.CASCADE)
 
     def _check_for_line(self):
         if self.line:
