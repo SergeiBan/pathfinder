@@ -74,24 +74,28 @@ def find_all_seapaths(sea_start_terminal, container, SeaRate, etd_from=None, etd
     return applicable_rates_no_etd or applicable_rates_with_etd
 
 
-def get_inner_rr_rates(container, InnerRRRate, end_terminals, gross, is_agent_rate):
+def get_inner_rr_rates(ar_cities, container, InnerRRRate, end_terminals, gross, is_agent_rate):
     # Получаем все ЖД ставки из всех морских терминалов прибытия во все ЖД терминалы города доставки
+
     rr_rates = None
     if container == '20DC' and gross <= 24000:
         rr_rates = InnerRRRate.objects.filter(
-            Q(end_terminal__in=end_terminals) &
-            Q(rate_20_24__isnull=False),
-            line__isnull=is_agent_rate
+            (Q(end_terminal__in=end_terminals) &
+            Q(rate_20_24__isnull=False)),
+            line__isnull=is_agent_rate,
+            start_terminal__name__in=ar_cities
         ).distinct().annotate(truck=F('end_terminal__city__local_truck__price'))
-    elif container == '20DC' and gross <= 28000:
+
+
+    elif container == '20DC':
         rr_rates = InnerRRRate.objects.filter(
-            Q(end_terminal__in=end_terminals) & Q(rate_20_28__isnull=False), line__isnull=is_agent_rate
+            (Q(end_terminal__in=end_terminals) & Q(rate_20_28__isnull=False)), line__isnull=is_agent_rate
         ).distinct().annotate(truck=F('end_terminal__city__local_truck__price'))
 
     if container == '40HC':
         rr_rates = InnerRRRate.objects.filter(
-            Q(end_terminal__in=end_terminals) &
-            Q(rate_40__isnull=False),
+            (Q(end_terminal__in=end_terminals) &
+            Q(rate_40__isnull=False)),
             line__isnull=is_agent_rate
         ).distinct().annotate(truck=F('end_terminal__city__local_truck__price'))
     
@@ -100,17 +104,18 @@ def get_inner_rr_rates(container, InnerRRRate, end_terminals, gross, is_agent_ra
 def get_line_mm_rates(line_rates, InnerRRRate, end_terminals, container, end_city, gross):
     sea_to_rr = []
     sea_rr_truck = []
-
+    sea_endnames = line_rates.values('sea_end_terminal__name')
     # Получаем все ЖД ставки из всех морских терминалов прибытия во все ЖД терминалы города доставки
-    rr_rates = get_inner_rr_rates(container, InnerRRRate, end_terminals, gross, is_agent_rate=False)
-    
+    rr_rates = get_inner_rr_rates(sea_endnames, container, InnerRRRate, end_terminals, gross, is_agent_rate=False)
+
     # Все морские ставки линии сочетаем со всеми ЖД ставками по критериям: город и линия
     for sea_rate in line_rates:
             for rr_rate in rr_rates:
                 # Проверяем, что эта ЖД ставка не особо строгих линейщиков
+                # Добавить!
 
                 if (
-                      sea_rate.sea_end_terminal.local_hub_city == rr_rate.start_terminal.city
+                      sea_rate.sea_end_terminal.name == rr_rate.start_terminal.name
                       and sea_rate.sea_line == rr_rate.line
                 ):
                     sea_to_rr.append([sea_rate, rr_rate])
@@ -142,13 +147,13 @@ def get_line_mm_rates(line_rates, InnerRRRate, end_terminals, container, end_cit
 def get_agent_mm_rates(agent_rates, InnerRRRate, end_terminals, container, end_city, gross):
     sea_to_rr = []
     sea_rr_truck = []
-
+    sea_endnames = agent_rates.values('sea_end_terminal__name')
     # Получаем все ЖД ставки из всех морских терминалов прибытия во все ЖД терминалы города доставки
-    rr_rates = get_inner_rr_rates(container, InnerRRRate, end_terminals, gross, is_agent_rate=True)
+    rr_rates = get_inner_rr_rates(sea_endnames, container, InnerRRRate, end_terminals, gross, is_agent_rate=True)
     
     for sea_rate in agent_rates:
             for rr_rate in rr_rates:
-                if sea_rate.sea_end_terminal.local_hub_city == rr_rate.start_terminal.city:
+                if sea_rate.sea_end_terminal.name == rr_rate.start_terminal.name:
                     sea_to_rr.append([sea_rate, rr_rate])
 
     # Если возможен автовывоз из другого города

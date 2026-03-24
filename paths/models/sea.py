@@ -122,15 +122,14 @@ class SeaRate(models.Model):
     rate_20 = models.DecimalField('Стоимость за 20ft, $', max_digits=9, decimal_places=2, null=True, blank=True)
     rate_40 = models.DecimalField('Стоимость за 40ft, $', max_digits=9, decimal_places=2, null=True, blank=True)
     intermediate = models.ForeignKey(SeaStartTerminal, on_delete=models.CASCADE, null=True, blank=True, related_name='start_point_rates')
-    agent = models.ForeignKey(ForeignAgent, on_delete=models.CASCADE, null=True, blank=True, related_name='agents')
+    agent = models.ForeignKey(ForeignAgent, verbose_name='Агент', on_delete=models.CASCADE, null=True, blank=True, related_name='agents')
     conversion = models.FloatField(verbose_name='Конвертация, %')
     
-
 
     def __str__(self):
         representation = f'20ft ${self.rate_20} 40ft ${self.rate_40} {self.sea_line} {self.sea_start_terminal} - {self.sea_end_terminal}'
         if self.etd:
-            representation = representation + ', '.join([etd.__str__() for etd in self.etd.all()])
+            representation = representation + ' ' + ', '.join([etd.__str__() for etd in self.etd.all()])
         return representation
     
     class Meta:

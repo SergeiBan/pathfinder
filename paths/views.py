@@ -103,7 +103,6 @@ def sea_rr_calculation(request):
         agent_rates, agent_sea_rr_truck = get_agent_mm_rates(
             agent_sea_rates, InnerRRRate, end_terminals, form.cleaned_data['container'], end_city, gross)
 
-
         # 3. Вдруг возможен автовывоз из портового города в конечный город
         if end_city.ingoing_truck_rates.exists():
             remote_truck_rates = end_city.ingoing_truck_rates.all()
