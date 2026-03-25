@@ -18,6 +18,7 @@ import pandas as pd
 import datetime
 
 from .parse_rates import parse_for
+from .parse_trucks import parse_truck_sheet
 
 
 def index(request):
@@ -195,8 +196,9 @@ def file_upload(request):
 
                         # В десятой колонке - валидность
                         validity_col = row[9]
-                        validity_date = make_dates([validity_col], year, sheet_errors)[0]
-                        if validity_date == 'error':
+                        try:
+                            validity_date = make_dates([validity_col], year, sheet_errors)[0]
+                        except:
                             continue
 
                         # В колонке 12 - ставка конвертации
@@ -231,6 +233,9 @@ def file_upload(request):
                         for error in sheet_errors:
                             messages.error(request, error)
                     continue
+
+                if sheet_name == 'Автовывоз':
+                    sheet_errors = sheet_errors.append(parse_truck_sheet(df))
                         
             messages.success(request, 'Файл успешно загружен!')
 

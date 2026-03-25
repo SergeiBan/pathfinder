@@ -269,7 +269,7 @@ def make_dates(wierd_dates, year, sheet_errors=None):
             day = int(wierd_date[0].strip())
         except:
             sheet_errors.append(f'Дата в неизвестном формате: {wierd_date[0]}')
-            return 'error'
+            raise ValueError(f'Дата в неизвестном формате: {wierd_date[0]}')
         
         month = MONTHS[wierd_date[1].strip()]
         new_date = datetime.date(year, month, day)
@@ -297,7 +297,6 @@ def get_etd(etd_col, year):
         new_dates = make_dates(etds, year)
         new_etds = []
 
-        
         for new_date in new_dates:
             obj, created = SeaETD.objects.get_or_create(
                 etd=new_date,
