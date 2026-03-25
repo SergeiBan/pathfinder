@@ -113,12 +113,13 @@ def get_line_mm_rates(line_rates, InnerRRRate, end_terminals, container, end_cit
             for rr_rate in rr_rates:
                 # Проверяем, что эта ЖД ставка не особо строгих линейщиков
                 # Добавить!
-
+                
                 if (
                       sea_rate.sea_end_terminal.name == rr_rate.start_terminal.name
                       and sea_rate.sea_line == rr_rate.line
                 ):
-                    sea_to_rr.append([sea_rate, rr_rate])
+                    if not rr_rate.pol or rr_rate.pol == sea_rate.sea_start_terminal:
+                        sea_to_rr.append([sea_rate, rr_rate])
     
 
     # 3. Если нужен автовывоз в другой город
