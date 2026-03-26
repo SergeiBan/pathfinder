@@ -17,8 +17,9 @@ from django.contrib import messages
 import pandas as pd
 import datetime
 
-from .parse_rates import parse_for
+from .parse_rr import parse_for
 from .parse_trucks import parse_truck_sheet
+from .parse_sea import parse_sea_sheet
 
 
 def index(request):
@@ -147,6 +148,7 @@ def file_upload(request):
         
     if request.method == 'POST':
         form = UploadForm(request.POST, request.FILES)
+
         SeaStartTerminal.objects.all().delete()
         SeaLine.objects.all().delete()
         SeaEndTerminal.objects.all().delete()
@@ -160,84 +162,85 @@ def file_upload(request):
         if form.is_valid():
             uploaded_file = request.FILES['uploaded_file']
             all_sheets = pd.read_excel(uploaded_file, sheet_name=None)
+            sheet_errors = []
 
             for sheet_name, df in all_sheets.items():
                 
-                sheet_errors = []
                 if sheet_name.upper() in ACCEPTABLE_POLS:
+                    sheet_errors.append(parse_sea_sheet(sheet_name, df))
                     
-                    for row in df.itertuples(index=False):
+                    # for row in df.itertuples(index=False):
 
-                        # Прежде всего проверяем, что цена есть хотя бы на один тип контейнера
-                        rate_20 = get_container_prices(row[2])
-                        rate_40 = get_container_prices(row[3])
-                        if not rate_20 and not rate_40:
-                            continue
+                    #     # Прежде всего проверяем, что цена есть хотя бы на один тип контейнера
+                    #     rate_20 = get_container_prices(row[2])
+                    #     rate_40 = get_container_prices(row[3])
+                    #     if not rate_20 and not rate_40:
+                    #         continue
 
-                        # В первой колонке - порт отправки и дроп офф
-                        first_col = row[0]
-                        if isinstance(first_col, str):
-                            POL, drop_off = get_pol(first_col)
+                    #     # В первой колонке - порт отправки и дроп офф
+                    #     first_col = row[0]
+                    #     if isinstance(first_col, str):
+                    #         POL, drop_off = get_pol(first_col)
 
-                        # Во второй колонке - линия
-                        second_col = row[1]
-                        if isinstance(second_col, str):
-                            sea_line = get_carrier(second_col)
+                    #     # Во второй колонке - линия
+                    #     second_col = row[1]
+                    #     if isinstance(second_col, str):
+                    #         sea_line = get_carrier(second_col)
                         
-                        # В колонке E (пятая) - морские терминалы прибытия
-                        POD_col = row[4]
-                        if isinstance(POD_col, str):
-                            pods = get_pods(POD_col)
+                    #     # В колонке E (пятая) - морские терминалы прибытия
+                    #     POD_col = row[4]
+                    #     if isinstance(POD_col, str):
+                    #         pods = get_pods(POD_col)
                         
-                        # В колонке F (седьмая) - ETD
-                        year = datetime.date.today().year
-                        etd_col = row[6]
-                        etds = get_etd(etd_col, year)
+                    #     # В колонке F (седьмая) - ETD
+                    #     year = datetime.date.today().year
+                    #     etd_col = row[6]
+                    #     etds = get_etd(etd_col, year)
 
-                        # В десятой колонке - валидность
-                        validity_col = row[9]
-                        try:
-                            validity_date = make_dates([validity_col], year, sheet_errors)[0]
-                        except:
-                            continue
+                    #     # В десятой колонке - валидность
+                    #     validity_col = row[9]
+                    #     try:
+                    #         validity_date = make_dates([validity_col], year, sheet_errors)[0]
+                    #     except:
+                    #         continue
 
-                        # В колонке 12 - ставка конвертации
-                        conversion_rate = get_conversion(row[11])
+                    #     # В колонке 12 - ставка конвертации
+                    #     conversion_rate = get_conversion(row[11])
 
-                        # В колонке 14 - агент или линия
-                        agent = row[13]
-                        is_agent = check_agent(agent)
+                    #     # В колонке 14 - агент или линия
+                    #     agent = row[13]
+                    #     is_agent = check_agent(agent)
 
-                        for pod in pods:
+                    #     for pod in pods:
 
-                            sr = SeaRate(
-                                sea_line=sea_line,
-                                sea_start_terminal=POL,
-                                validity=validity_date,
-                                rate_20=rate_20,
-                                rate_40=rate_40,
-                                sea_end_terminal=pod,
-                                conversion=conversion_rate,
-                                agent=is_agent
-                            )
-                            sr.save()
-                            if etds:
-                                sr.etd.add(*etds)
-                if sheet_errors:
-                    for error in sheet_errors:
-                        messages.error(request, error)
+                    #         sr = SeaRate(
+                    #             sea_line=sea_line,
+                    #             sea_start_terminal=POL,
+                    #             validity=validity_date,
+                    #             rate_20=rate_20,
+                    #             rate_40=rate_40,
+                    #             sea_end_terminal=pod,
+                    #             conversion=conversion_rate,
+                    #             agent=is_agent
+                    #         )
+                    #         sr.save()
+                    #         if etds:
+                    #             sr.etd.add(*etds)
                 
                 if sheet_name == 'FOR':
-                    sheet_errors = parse_for(df)
-                    if sheet_errors:
-                        for error in sheet_errors:
-                            messages.error(request, error)
+                    sheet_errors.append(parse_for(df))
                     continue
 
                 if sheet_name == 'Автовывоз':
-                    sheet_errors = sheet_errors.append(parse_truck_sheet(df))
+                    sheet_errors.append(parse_truck_sheet(df))
+                    continue
+            
+            if sheet_errors:
+                for error in sheet_errors:
+                    messages.error(request, error)
                         
-            messages.success(request, 'Файл успешно загружен!')
+            else:
+                messages.success(request, 'Файл успешно загружен!')
 
     else:
         form = UploadForm()
