@@ -1,5 +1,5 @@
 from .models import (
-    RR_NO_CITY, InnerRRRate, InnerRRTerminal, SeaEndTerminal,
+    InnerRRRate, InnerRRTerminal, SeaEndTerminal,
     LocalHubCity, ACCEPTABLE_INNER_RR, ACCEPTABLE_LOCAL_HUBS, SEA_POINTS, CARRIERS,
     ACCEPTABLE_POLS, SeaStartTerminal, SeaLine
 )

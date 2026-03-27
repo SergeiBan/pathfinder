@@ -1,8 +1,9 @@
 from datetime import date
 from django.db.models import F, Q
+
 from .models import (
     SeaStartTerminal, SeaLine, SeaETD, SeaEndTerminal, LocalHubCity,
-    PORTS, ForeignAgent, SEA_POINTS, ACCEPTABLE_AGENTS
+    PORTS, ForeignAgent, SEA_POINTS, ACCEPTABLE_AGENTS, ACCEPTABLE_POLS
 )
 import sys, datetime
 
@@ -182,6 +183,9 @@ def get_pol(first_col):
     sea_start = first_col.split('\n')
     # Добавить проверку по списку
     POL = sea_start[0].strip().upper()
+    if POL not in ACCEPTABLE_POLS:
+        raise ValueError(f'Море: порт отправки неопознан: {POL}')
+
     if len(sea_start) > 2:
         drop_off = ' '.join(sea_start[1:]).strip()
     else:

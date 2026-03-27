@@ -16,8 +16,15 @@ def parse_sea_sheet(sheet_name, df):
 
         # В первой колонке - порт отправки и дроп офф
         first_col = row[0]
-        if isinstance(first_col, str):
-            POL, drop_off = get_pol(first_col)
+        try:
+            if isinstance(first_col, str): # В колонке порта - не nan
+                POL, drop_off = get_pol(first_col)
+            elif not POL: # В ячейке - nan, но прошлый порт не был распознан
+                continue
+        except:
+            sheet_errors.append(f'Море: неопознанный порт отправки {first_col}')
+            POL, drop_off = None, None
+            continue
 
         # Прежде всего проверяем, что цена есть хотя бы на один тип контейнера
         rate_20 = get_container_prices(row[2])
