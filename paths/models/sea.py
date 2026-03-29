@@ -34,13 +34,20 @@ class SeaStartTerminal(models.Model):
 class LocalHubCity(models.Model):
     name = models.CharField('Внутренний транспортный хаб', max_length=32, unique=True)
 
-    def __str__(self):
-            return self.name
-    
     class Meta:
         verbose_name = 'Внутренний транспортный хаб'
         verbose_name_plural = 'Внутренние транспортные хабы'
 
+    def __str__(self):
+            return self.name
+    
+    def get_truck_price(self):
+        if self.name in ['МОСКВА', 'САНКТ-ПЕТЕРБУРГ']:
+            return 25000
+        elif self.name in ['НОВОСИБИРСК', 'ЕКАТЕРИНБУРГ']:
+            return 20000
+        else:
+            return None
 
 class LocalTruck(models.Model):
     city = models.OneToOneField(LocalHubCity, on_delete=models.CASCADE, related_name='local_truck', verbose_name='Город локального автовывоза')

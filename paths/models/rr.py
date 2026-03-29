@@ -41,6 +41,10 @@ class ForeignRRStartTerminal(models.Model):
 class InnerRRTerminal(models.Model):
     name = models.CharField('Внутренний ЖД терминал', max_length=64, unique=True)
     city = models.ForeignKey(LocalHubCity, verbose_name='Город ЖД терминала', on_delete=models.CASCADE, related_name='rr_terminals')
+    gtd_20 = models.DecimalField(max_digits=9, decimal_places=2, null=True, blank=True)
+    gtd_40 = models.DecimalField(max_digits=9, decimal_places=2, null=True, blank=True)
+    vtt_20 = models.DecimalField(max_digits=9, decimal_places=2, null=True, blank=True)
+    vtt_40 = models.DecimalField(max_digits=9, decimal_places=2, null=True, blank=True)
 
     def __str__(self):
         return self.name

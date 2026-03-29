@@ -1,5 +1,15 @@
-from .models import ACCEPTABLE_LOCAL_HUBS, ACCEPTABLE_INNER_RR
+from .models import ACCEPTABLE_LOCAL_HUBS, ACCEPTABLE_INNER_RR, InnerRRTerminal, LocalHubCity
 
+
+def validate_price(price_cell):
+    if price_cell != price_cell or price_cell == '/':
+        return None
+    
+    if isinstance(price_cell, int):
+        return price_cell
+    else:
+        raise ValueError('Автовывоз: цена в неверном формате')
+        
 
 def parse_truck_sheet(df):
     sheet_errors = []
@@ -18,41 +28,53 @@ def parse_truck_sheet(df):
             if city not in ACCEPTABLE_LOCAL_HUBS:
                 sheet_errors.append(f'Автовывоз: неопознанный город: {city}')
                 city = None
+                continue
         
         if isinstance(row[1], str):
             rr_terminal = row[1].strip().upper()
             if rr_terminal not in ACCEPTABLE_INNER_RR:
-                if rr_terminal == 'Орехово - Зуево'.strip().upper():
-                    print(rr_terminal)
                 sheet_errors.append(f'Автовывоз: неопознанный ЖД терминал: {rr_terminal}')
                 continue
 
-        if isinstance(row[2], int):
-            gtd_20 = row[2]
-        else:
-            sheet_errors.append(f'Непонятный формат цены на ГТД {row[2]}')
-            continue
-
-        if isinstance(row[3], int):
-            gtd_40 = row[3]
-        else:
-            sheet_errors.append(f'Непонятный формат цены на ГТД {row[3]}')
-            continue
-
-        if isinstance(row[4], int):
-            vtt_20 = row[4]
-        else:
-            sheet_errors.append(f'Непонятный формат цены на ВТТ {row[4]}')
-            continue
-    
-        if isinstance(row[5], int):
-            vtt_40 = row[5]
-        else:
-            sheet_errors.append(f'Непонятный формат цены на ВТТ {row[5]}')
+        if ((row[2] != row[2] or row[2] == '/') and
+            (row[3] != row[3] or row[3] == '/') and
+            (row[4] != row[4] or row[4] == '/') and
+            (row[5] != row[5] or row[5] == '/')):
             continue
         
-        if not gtd_20 and not gtd_40 and not vtt_20 and not vtt_40:
+        try:
+            gtd_20 = validate_price(row[2])
+        except:
+            sheet_errors.append(f'Автвовывоз: неизвестный формат цены на ГТД {row[2]}')
             continue
+        print(gtd_20)
+        try:
+            gtd_40 = validate_price(row[3])
+        except:
+            sheet_errors.append(f'Автвовывоз: неизвестный формат цены на ГТД {row[3]}')
+            continue
+        
+        try:
+            vtt_20 = validate_price(row[4])
+        except:
+            sheet_errors.append(f'Автвовывоз: неизвестный формат цены на ВТТ {row[4]}')
+            continue
+
+        try:
+            vtt_40 = validate_price(row[5])
+        except:
+            sheet_errors.append(f'Автвовывоз: неизвестный формат цены на ВТТ {row[5]}')
+            continue
+
+    
+        city_obj, city_created = LocalHubCity.objects.get_or_create(name=city, defaults={})
+        terminal_obj, terminal_created = InnerRRTerminal.objects.get_or_create(
+            name=rr_terminal,
+            defaults={'city': city_obj or city_created, 'gtd_20': gtd_20, 'gtd_40': gtd_40, 'vtt_20': vtt_20, 'vtt_40': vtt_40}
+        )
+        
+        print(terminal_obj or terminal_created)
+        
 
 
     return sheet_errors
