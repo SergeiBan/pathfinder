@@ -33,6 +33,7 @@ class SeaStartTerminal(models.Model):
 
 class LocalHubCity(models.Model):
     name = models.CharField('Внутренний транспортный хаб', max_length=32, unique=True)
+    local_truck = models.DecimalField(max_digits=9, decimal_places=2, null=True, blank=True)
 
     class Meta:
         verbose_name = 'Внутренний транспортный хаб'
@@ -41,24 +42,13 @@ class LocalHubCity(models.Model):
     def __str__(self):
             return self.name
     
-    def get_truck_price(self):
+    def save(self, *args, **kwargs):
         if self.name in ['МОСКВА', 'САНКТ-ПЕТЕРБУРГ']:
-            return 25000
+            self.local_truck = 25000
         elif self.name in ['НОВОСИБИРСК', 'ЕКАТЕРИНБУРГ']:
-            return 20000
-        else:
-            return None
+            self.local_truck = 20000
 
-class LocalTruck(models.Model):
-    city = models.OneToOneField(LocalHubCity, on_delete=models.CASCADE, related_name='local_truck', verbose_name='Город локального автовывоза')
-    price = models.DecimalField('Цена автовывоза по городу', max_digits=9, decimal_places=2)
-
-    def __str__(self):
-            return f'{self.price} - {self.city}'
-    
-    class Meta:
-        verbose_name = 'Автовывоз внутри города'
-        verbose_name_plural = 'Автовывозы внутри городов'
+        super().save(*args, **kwargs)
 
 
 class DistantTruckRate(models.Model):
@@ -134,7 +124,7 @@ class SeaRate(models.Model):
     
 
     def __str__(self):
-        representation = f'20ft ${self.rate_20} 40ft ${self.rate_40} {self.sea_line} {self.sea_start_terminal} - {self.sea_end_terminal}'
+        representation = f'{self.sea_line} {self.sea_start_terminal} - {self.sea_end_terminal}'
         if self.etd:
             representation = representation + ' ' + ', '.join([etd.__str__() for etd in self.etd.all()])
         return representation

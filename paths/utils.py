@@ -85,20 +85,20 @@ def get_inner_rr_rates(ar_cities, container, InnerRRRate, end_terminals, gross, 
             Q(rate_20_24__isnull=False)),
             line__isnull=is_agent_rate,
             start_terminal__name__in=ar_cities
-        ).distinct().annotate(truck=F('end_terminal__city__local_truck__price'))
+        ).distinct().annotate(truck=F('end_terminal__city__local_truck'))
 
 
     elif container == '20DC':
         rr_rates = InnerRRRate.objects.filter(
             (Q(end_terminal__in=end_terminals) & Q(rate_20_28__isnull=False)), line__isnull=is_agent_rate
-        ).distinct().annotate(truck=F('end_terminal__city__local_truck__price'))
+        ).distinct().annotate(truck=F('end_terminal__city__local_truck'))
 
     if container == '40HC':
         rr_rates = InnerRRRate.objects.filter(
             (Q(end_terminal__in=end_terminals) &
             Q(rate_40__isnull=False)),
             line__isnull=is_agent_rate
-        ).distinct().annotate(truck=F('end_terminal__city__local_truck__price'))
+        ).distinct().annotate(truck=F('end_terminal__city__local_truck'))
     
     return rr_rates
 
@@ -111,19 +111,16 @@ def get_line_mm_rates(line_rates, InnerRRRate, end_terminals, container, end_cit
 
     # Все морские ставки линии сочетаем со всеми ЖД ставками по критериям: город и линия
     for sea_rate in line_rates:
-            for rr_rate in rr_rates:
-                # Проверяем, что эта ЖД ставка не особо строгих линейщиков
-                # Добавить!
-                
-                if (
-                      sea_rate.sea_end_terminal.name == rr_rate.start_terminal.name
-                      and sea_rate.sea_line == rr_rate.line
-                ):
-                    if not rr_rate.pol or rr_rate.pol == sea_rate.sea_start_terminal:
-                        sea_to_rr.append([sea_rate, rr_rate])
+        for rr_rate in rr_rates:
+            if (
+                sea_rate.sea_end_terminal.name == rr_rate.start_terminal.name
+                and sea_rate.sea_line == rr_rate.line
+            ):
+                if not rr_rate.pol or rr_rate.pol == sea_rate.sea_start_terminal:
+                    sea_to_rr.append([sea_rate, rr_rate])
     
 
-    # 3. Если нужен автовывоз в другой город
+    # Если нужен автовывоз в другой город
     if end_city.ingoing_truck_rates.exists():
         remote_truck_rates = end_city.ingoing_truck_rates.all()
         all_rr_rates = InnerRRRate.objects.all() # Все ЖД ставки внутри России
@@ -235,11 +232,13 @@ def get_pods(pod_col):
     
     created_pods = []
     for p in result_pods:
-        city_obj, created_city = LocalHubCity.objects.get_or_create(name=p[1])
+        city_obj, created_city = LocalHubCity.objects.get_or_create(name=p[1], defaults={})
+        city = city_obj or created_city
+        
         pod_obj, created_pod = SeaEndTerminal.objects.get_or_create(
-        name=p[0],
-        defaults={'local_hub_city': city_obj or created_city}
-    )
+            name=p[0],
+        defaults={'local_hub_city': city}
+        )
         created_pods.append(pod_obj or created_pod)
 
     return created_pods

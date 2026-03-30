@@ -195,6 +195,8 @@ def parse_for(df):
                 name=rr_end_city_name,
                 defaults={}
             )
+            
+            
             rr_end_terminal, created_end_terminal = InnerRRTerminal.objects.get_or_create(
                 name=rr_end_terminal_name,
                 defaults={'city': rr_end_city or created_end_city}

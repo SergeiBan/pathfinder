@@ -66,11 +66,16 @@ def sea_rr_calculation(request):
     end_terminals = None
     remote_truck_rates = None
     sea_truck = []
+    container = None
+    is_vtt = False
+    gross = None
     
     if form.is_valid():
         end_city = form.cleaned_data['end_city']
         particular_rr_terminal = form.cleaned_data['rr_end_terminal']
         gross = form.cleaned_data['gross']
+        container = form.cleaned_data['container']
+        is_vtt = form.cleaned_data['container']
         
         # Если выбран конкретный ЖД терминал прибытия
         if particular_rr_terminal:
@@ -123,7 +128,7 @@ def sea_rr_calculation(request):
             direct_sea_rates = SeaRate.objects.filter(
                 sea_start_terminal=form.cleaned_data['sea_start_terminal'],
                 sea_end_terminal__in=end_terminals
-            ).annotate(truck=F('sea_end_terminal__local_hub_city__local_truck__price'))
+            ).annotate(truck=F('sea_end_terminal__local_hub_city__local_truck'))
 
         
 
@@ -136,8 +141,9 @@ def sea_rr_calculation(request):
         'line_sea_rr_truck': line_sea_rr_truck,
 
         'agent_rates': agent_rates,
-        'agent_sea_rr_truck': agent_sea_rr_truck
-
+        'agent_sea_rr_truck': agent_sea_rr_truck,
+        'gross': gross,
+        'container': container
     }
 
     return render(request, 'paths/sea_rr_calculation.html', context)

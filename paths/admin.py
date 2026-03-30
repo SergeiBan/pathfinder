@@ -1,7 +1,7 @@
 from django.contrib import admin
 from .models import (
     SeaStartTerminal, SeaEndTerminal, SeaCalculation, SeaRRCalculation,
-    SeaLine, SeaRate, SeaETD, LocalHubCity, LocalTruck, DistantTruckRate,
+    SeaLine, SeaRate, SeaETD, LocalHubCity, DistantTruckRate,
     ForeignAgent,
 
     ForeignRRStartTerminal, InnerRRTerminal, RRETD, RRRate, InnerRRRate,
@@ -11,7 +11,6 @@ from .models import (
 
 
 admin.site.register(LocalHubCity)
-admin.site.register(LocalTruck)
 admin.site.register(DistantTruckRate)
 
 admin.site.register(SeaStartTerminal)

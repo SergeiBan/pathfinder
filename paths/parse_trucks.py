@@ -47,7 +47,7 @@ def parse_truck_sheet(df):
         except:
             sheet_errors.append(f'Автвовывоз: неизвестный формат цены на ГТД {row[2]}')
             continue
-        print(gtd_20)
+        
         try:
             gtd_40 = validate_price(row[3])
         except:
@@ -68,12 +68,19 @@ def parse_truck_sheet(df):
 
     
         city_obj, city_created = LocalHubCity.objects.get_or_create(name=city, defaults={})
-        terminal_obj, terminal_created = InnerRRTerminal.objects.get_or_create(
-            name=rr_terminal,
-            defaults={'city': city_obj or city_created, 'gtd_20': gtd_20, 'gtd_40': gtd_40, 'vtt_20': vtt_20, 'vtt_40': vtt_40}
-        )
+        terminal = InnerRRTerminal.objects.filter(name=rr_terminal)
+        if terminal:
+            terminal = terminal.first()
+            terminal.gtd_20 = gtd_20
+            terminal.gtd_40 = gtd_40
+            terminal.vtt_20 = vtt_20
+            terminal.vtt_40 = vtt_40
+            terminal.save()
+        else:
+            sheet_errors.append(f'ЖД терминал не найден: {rr_terminal}')
+            continue
         
-        print(terminal_obj or terminal_created)
+        
         
 
 
