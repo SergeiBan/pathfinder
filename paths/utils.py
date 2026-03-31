@@ -77,7 +77,7 @@ def find_all_seapaths(sea_start_terminal, container, SeaRate, etd_from=None, etd
 
 def get_inner_rr_rates(ar_cities, container, InnerRRRate, end_terminals, gross, is_agent_rate):
     # Получаем все ЖД ставки из всех морских терминалов прибытия во все ЖД терминалы города доставки
-
+    
     rr_rates = None
     if container == '20DC' and gross <= 24000:
         rr_rates = InnerRRRate.objects.filter(
@@ -108,7 +108,7 @@ def get_line_mm_rates(line_rates, InnerRRRate, end_terminals, container, end_cit
     sea_endnames = line_rates.values('sea_end_terminal__name')
     # Получаем все ЖД ставки из всех морских терминалов прибытия во все ЖД терминалы города доставки
     rr_rates = get_inner_rr_rates(sea_endnames, container, InnerRRRate, end_terminals, gross, is_agent_rate=False)
-
+  
     # Все морские ставки линии сочетаем со всеми ЖД ставками по критериям: город и линия
     for sea_rate in line_rates:
         for rr_rate in rr_rates:
@@ -119,7 +119,6 @@ def get_line_mm_rates(line_rates, InnerRRRate, end_terminals, container, end_cit
                 if not rr_rate.pol or rr_rate.pol == sea_rate.sea_start_terminal:
                     sea_to_rr.append([sea_rate, rr_rate])
     
-
     # Если нужен автовывоз в другой город
     if end_city.ingoing_truck_rates.exists():
         remote_truck_rates = end_city.ingoing_truck_rates.all()

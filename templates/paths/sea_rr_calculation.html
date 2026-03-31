@@ -31,18 +31,19 @@
                     <p class="card-text"><ul>
                         {% for rate in line_rates %}
                             <li>
-                                {{ rate.0 }} {% if container == '20DC' %} {{ rate.0.rate_20 }} {% else %} {{ rate.0.rate_40 }} {% endif %}
-                                {{ rate.1 }}
-                                {% if container == '20DC' %} 
-                                    {% if gross <= 24000 %}
-                                        {{ rate.1.rate_20_24 }}
-                                        {{ rate.1.start_terminal.gtd_20}} {{ rate.1.start_terminal.vtt_20}}
-                                    {% else %}
-                                        {{ rate.1.rate_20_28}}
-                                    {% endif %}
+                                Море, $: {% if container == '20DC' %}{{ rate.0.rate_20 }}{% else %}{{ rate.0.rate_40 }}{% endif %}<br>{{ rate.0 }}
+                                <br>
+                                ЖД, ₽:
+                                {% if container == '20DC' %}
+                                    {% if gross <= 24000 %}{{ rate.1.rate_20_24 }}{% else %}{{ rate.1.rate_20_28}}{% endif %}
+                                    Прием по станции:
+                                    {% if is_vtt %}{{ rate.1.end_terminal.vtt_20 }}{% else %}{{ rate.1.end_terminal.gtd_20 }}{% endif %}
                                 {% else %}
                                     {{ rate.1.rate_40 }}
+                                    Прием по станции:
+                                    {% if is_vtt %}{{ rate.1.end_terminal.vtt_40 }}{% else %}{{ rate.1.end_terminal.gtd_40 }}{% endif %}
                                 {% endif %}
+                            {{ rate.1 }}
                             </li>
                         {% endfor %}
                     </ul></p>
@@ -70,18 +71,19 @@
                     <p class="card-text"><ul>
                         {% for rate in agent_rates %}
                             <li>
-                                {{ rate.0 }} {% if container == '20DC' %} {{ rate.0.rate_20 }} {% else %} {{ rate.0.rate_40 }} {% endif %}
-                                {{ rate.1 }}
-                                {% if container == '20DC' %} 
-                                    {% if gross <= 24000 %}
-                                        {{ rate.1.start_terminal.gtd_20 }} {{ rate.1.start_terminal.vtt_20 }}
-                                        {{ rate.1.rate_20_24 }}
-                                    {% else %}
-                                        {{ rate.1.rate_20_28}}
-                                    {% endif %}
+                                Море, $: {% if container == '20DC' %}{{ rate.0.rate_20 }}{% else %}{{ rate.0.rate_40 }}{% endif %}<br>{{ rate.0 }}
+                                <br>
+                                ЖД, ₽:
+                                {% if container == '20DC' %}
+                                    {% if gross <= 24000 %}{{ rate.1.rate_20_24 }}{% else %}{{ rate.1.rate_20_28}}{% endif %}
+                                    Прием по станции:
+                                    {% if is_vtt %}{{ rate.1.end_terminal.vtt_20 }}{% else %}{{ rate.1.end_terminal.gtd_20 }}{% endif %}
                                 {% else %}
                                     {{ rate.1.rate_40 }}
+                                    Прием по станции:
+                                    {% if is_vtt %}{{ rate.1.end_terminal.vtt_40 }}{% else %}{{ rate.1.end_terminal.gtd_40 }}{% endif %}
                                 {% endif %}
+                            {{ rate.1 }}
                             </li>
                         {% endfor %}
                     </ul></p>

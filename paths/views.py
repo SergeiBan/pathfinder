@@ -75,7 +75,7 @@ def sea_rr_calculation(request):
         particular_rr_terminal = form.cleaned_data['rr_end_terminal']
         gross = form.cleaned_data['gross']
         container = form.cleaned_data['container']
-        is_vtt = form.cleaned_data['container']
+        is_vtt = form.cleaned_data['is_VTT']
         
         # Если выбран конкретный ЖД терминал прибытия
         if particular_rr_terminal:
@@ -103,7 +103,7 @@ def sea_rr_calculation(request):
         # 2 Делим морские ставки на линейные и агентские
         agent_sea_rates = sea_rates.filter(agent__isnull=False)
         line_sea_rates = sea_rates.filter(agent__isnull=True)
-        
+
         line_rates, line_sea_rr_truck = get_line_mm_rates(
             line_sea_rates, InnerRRRate, end_terminals, form.cleaned_data['container'], end_city, gross)
         
@@ -143,7 +143,8 @@ def sea_rr_calculation(request):
         'agent_rates': agent_rates,
         'agent_sea_rr_truck': agent_sea_rr_truck,
         'gross': gross,
-        'container': container
+        'container': container,
+        'is_vtt': is_vtt
     }
 
     return render(request, 'paths/sea_rr_calculation.html', context)
