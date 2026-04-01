@@ -10,6 +10,11 @@ from .models import (
 )
 
 
+class SeaRateAdmin(admin.ModelAdmin):
+    list_display = ('sea_line', 'sea_start_terminal', 'sea_end_terminal', 'agent')
+    list_filter = ('sea_line', 'sea_start_terminal', 'sea_end_terminal', 'agent')
+
+
 admin.site.register(LocalHubCity)
 admin.site.register(DistantTruckRate)
 
@@ -17,7 +22,7 @@ admin.site.register(SeaStartTerminal)
 admin.site.register(SeaEndTerminal)
 admin.site.register(SeaCalculation)
 admin.site.register(SeaLine)
-admin.site.register(SeaRate)
+admin.site.register(SeaRate, SeaRateAdmin)
 admin.site.register(SeaETD)
 admin.site.register(ForeignAgent)
 

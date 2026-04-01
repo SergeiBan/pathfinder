@@ -61,8 +61,12 @@ def parse_sea_sheet(sheet_name, df):
         agent = row[13]
         is_agent = check_agent(agent)
 
-        for pod in pods:
+        is_direct = row[8]
+        if is_direct is not 'DIRECT':
+            pass # ДОБАВИТЬ
 
+        for pod in pods:
+           
             sr = SeaRate(
                 sea_line=sea_line,
                 sea_start_terminal=POL,

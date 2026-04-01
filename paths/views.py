@@ -3,7 +3,7 @@ from .forms import SeaCalculationForm, RRCalculationForm, SeaRRCalculationForm, 
 from .models import (
     SeaCalculation, SeaRate, InnerRRRate, LocalHubCity, SeaEndTerminal, InnerRRTerminal,
     DistantTruckRate, SeaStartTerminal, SeaLine, SeaETD, ACCEPTABLE_POLS, ACCEPTABLE_AGENTS,
-    
+    ForeignAgent
 )
 from .utils import (
     get_line_mm_rates, get_agent_mm_rates, find_seapath, find_all_seapaths, get_pol,
@@ -163,6 +163,7 @@ def file_upload(request):
         LocalHubCity.objects.all().delete()
         SeaRate.objects.all().delete()
         InnerRRRate.objects.all().delete()
+        ForeignAgent.objects.all().delete()
 
         POL = None
 

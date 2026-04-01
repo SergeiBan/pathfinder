@@ -129,9 +129,6 @@ def parse_for(df):
             rr_end_terminal_name = f'любой ЖД терминал {arrival}'
             rr_end_city_name = arrival
         
-        if carrier == 'MSC':
-                print(rr_end_terminal_name)
-        
         # Проверяем, что ЖД город прибытия допустимый. Иначе нужно его исправить/добавить
         if rr_end_city_name not in ACCEPTABLE_LOCAL_HUBS:
                 sheet_errors.append(f'Неизвестный город ЖД терминала прибытия: {rr_end_city_name}')
@@ -188,7 +185,10 @@ def parse_for(df):
         for pod in current_pods:
 
             # Получаем морской терминал и город
-            terminal = get_object_or_404(SeaEndTerminal, name=pod)
+            try:
+                terminal = SeaEndTerminal.objects.get(name=pod)
+            except:
+                continue
             city = terminal.local_hub_city
 
             # Создаем ЖД терминал отправки - он назван, как морской
