@@ -77,11 +77,7 @@ def parse_truck_sheet(df):
             terminal.vtt_40 = vtt_40
             terminal.save()
         else:
-            sheet_errors.append(f'ЖД терминал не найден: {rr_terminal}')
+            sheet_errors.append(f'Автовывоз: ЖД терминал не найден: {rr_terminal}')
             continue
-        
-        
-        
-
 
     return sheet_errors
