@@ -10,7 +10,7 @@ from .utils import (
     get_carrier, get_pods, get_etd, get_container_prices, make_dates, get_conversion,
     check_agent
 )
-from django.db.models import F
+from django.db.models import F, QuerySet
 from django.http import Http404
 from django.contrib.auth.decorators import permission_required
 from django.contrib import messages

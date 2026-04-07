@@ -47,7 +47,7 @@ def parse_truck_sheet(df):
         except:
             sheet_errors.append(f'Автвовывоз: неизвестный формат цены на ГТД {row[2]}')
             continue
-        
+    
         try:
             gtd_40 = validate_price(row[3])
         except:
