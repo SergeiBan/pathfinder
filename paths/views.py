@@ -8,7 +8,7 @@ from .models import (
 from .utils import (
     get_line_mm_rates, get_agent_mm_rates, find_seapath, find_all_seapaths, get_pol,
     get_carrier, get_pods, get_etd, get_container_prices, make_dates, get_conversion,
-    check_agent
+    check_agent, sort_sea_rr
 )
 from django.db.models import F, QuerySet
 from django.http import Http404
@@ -54,19 +54,19 @@ def rr_calculation(request):
 
 def sea_rr_calculation(request):
     form = SeaRRCalculationForm(request.POST or None)
-    direct_sea_rates = None
-    sea_truck = None
+    direct_sea_rates: QuerySet[SeaRate] = None
+    sea_truck: list[SeaRate, DistantTruckRate] = None
 
-    line_rates = None 
-    line_sea_rr_truck = None
+    line_rates: QuerySet[SeaRate] = None 
+    line_sea_rr_truck: list[SeaRate, InnerRRRate, DistantTruckRate] = None
 
-    agent_rates = None
-    agent_sea_rr_truck = None
+    agent_rates: QuerySet[SeaRate] = None
+    agent_sea_rr_truck: list[SeaRate, InnerRRRate, DistantTruckRate] = None
 
-    end_terminals = None
+    end_terminals: QuerySet[InnerRRTerminal] = None
     remote_truck_rates = None
     sea_truck = []
-    container = None
+    container: str = None
     is_vtt = False
     gross = None
     
@@ -130,6 +130,8 @@ def sea_rr_calculation(request):
                 sea_end_terminal__in=end_terminals
             ).annotate(truck=F('sea_end_terminal__local_hub_city__local_truck'))
 
+    agent_rates = sort_sea_rr(agent_rates, container, gross)
+    line_rates = sort_sea_rr(line_rates, container, gross)
     context = {
         'form': form,
         'direct_sea_rates': direct_sea_rates,

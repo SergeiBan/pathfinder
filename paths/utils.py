@@ -1,5 +1,9 @@
 from datetime import date
+from decimal import Decimal
 from django.db.models import F, Q
+
+from paths.models.rr import InnerRRRate
+from paths.models.sea import SeaRate
 
 from .models import (
     SeaStartTerminal, SeaLine, SeaETD, SeaEndTerminal, LocalHubCity,
@@ -344,3 +348,30 @@ def check_agent(agent):
             )
             return obj or created
     return None
+
+
+def sort_sea_rr(rates: list[SeaRate, InnerRRRate], container: str, gross: Decimal):
+    annotated_rates = []
+    for rate in rates:
+        total = 0
+        sea_price, rr_price = 0, 0
+        if container == '20DC':
+            sea_price = rate[0].rate_20
+            if gross <= 24000:
+                rr_price = rate[1].rate_20_24
+            else:
+                rr_price = rate[1].rate_20_28
+        
+        if container == '40HC':
+            sea_price = rate[0].rate_40
+            rr_price = rate[1].rate_40
+
+        total = total + sea_price + rr_price
+
+        annotated_rates.append({
+            'sea_rate': rate[0], 'sea_price': sea_price, 'rr_rate': rate[1], 'rr_price': rr_price, 'total': total
+        })
+
+
+    sorted_rates = sorted(annotated_rates, key=lambda x: x['total'])
+    return sorted_rates

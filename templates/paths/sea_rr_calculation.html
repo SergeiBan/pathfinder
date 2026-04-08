@@ -71,19 +71,19 @@
                     <p class="card-text"><ul>
                         {% for rate in agent_rates %}
                             <li>
-                                Море, $: {% if container == '20DC' %}{{ rate.0.rate_20 }}{% else %}{{ rate.0.rate_40 }}{% endif %}<br>{{ rate.0 }}
+                                Море, $: {{ rate.sea_price }} <br>{{ rate.sea_rate }}
                                 <br>
                                 ЖД, ₽:
                                 {% if container == '20DC' %}
-                                    {% if gross <= 24000 %}{{ rate.1.rate_20_24 }}{% else %}{{ rate.1.rate_20_28}}{% endif %}
+                                    {{ rate.rr_price }}
                                     Прием по станции:
-                                    {% if is_vtt %}{{ rate.1.end_terminal.vtt_20 }}{% else %}{{ rate.1.end_terminal.gtd_20 }}{% endif %}
+                                    {% if is_vtt %}{{ rate.rr_rate.end_terminal.vtt_20 }}{% else %}{{ rate.rr_rate.end_terminal.gtd_20 }}{% endif %}
                                 {% else %}
-                                    {{ rate.1.rate_40 }}
+                                    {{ rate.rr_rate.rate_40 }}
                                     Прием по станции:
-                                    {% if is_vtt %}{{ rate.1.end_terminal.vtt_40 }}{% else %}{{ rate.1.end_terminal.gtd_40 }}{% endif %}
+                                    {% if is_vtt %}{{ rate.rr_rate.end_terminal.vtt_40 }}{% else %}{{ rate.rr_rate.end_terminal.gtd_40 }}{% endif %}
                                 {% endif %}
-                            {{ rate.1 }}
+                            {{ rate.rr_rate }}
                             </li>
                         {% endfor %}
                     </ul></p>
