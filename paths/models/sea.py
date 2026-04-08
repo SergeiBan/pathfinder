@@ -123,12 +123,16 @@ class SeaRate(models.Model):
     conversion = models.FloatField(verbose_name='Конвертация, %')
     
 
+    class Meta:
+        verbose_name = 'Морская ставка'
+        verbose_name_plural = 'Морские ставки'
+
     def __str__(self):
         representation = f'{self.sea_line} {self.sea_start_terminal} - {self.sea_end_terminal}'
         if self.etd:
             representation = representation + ' ' + ', '.join([etd.__str__() for etd in self.etd.all()])
         return representation
     
-    class Meta:
-        verbose_name = 'Морская ставка'
-        verbose_name_plural = 'Морские ставки'
+    def get_etds(self):
+        return ', '.join([etd.__str__() for etd in self.etd.all()])
+    

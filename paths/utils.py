@@ -369,9 +369,10 @@ def sort_sea_rr(rates: list[SeaRate, InnerRRRate], container: str, gross: Decima
         total = total + sea_price + rr_price
 
         annotated_rates.append({
-            'sea_rate': rate[0], 'sea_price': sea_price, 'rr_rate': rate[1], 'rr_price': rr_price, 'total': total
+            'sea_rate': rate[0], 'sea_price': sea_price, 'etds': rate[0].get_etds(), 'rr_rate': rate[1],
+            'rr_price': rr_price, 'total': total
         })
-
+        print(rate[0].get_etds())
 
     sorted_rates = sorted(annotated_rates, key=lambda x: x['total'])
     return sorted_rates
