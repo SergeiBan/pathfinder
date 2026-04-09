@@ -98,7 +98,7 @@ class InnerRRRate(models.Model):
         truck = self.check_for_truck()
         if line:
              return f'{line}. {self.start_terminal} - {self.end_terminal}{truck}'
-        return f'{self.start_terminal} - {self.end_terminal}{truck}'
+        return f'{self.start_terminal} - {self.end_terminal}'
     
     class Meta:
         verbose_name = 'Внутренняя ЖД ставка'

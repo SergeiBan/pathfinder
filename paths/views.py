@@ -131,9 +131,9 @@ def sea_rr_calculation(request):
             ).annotate(truck=F('sea_end_terminal__local_hub_city__local_truck'))
 
     if agent_rates:
-        agent_rates = sort_sea_rr(agent_rates, container, gross)
+        agent_rates = sort_sea_rr(agent_rates, container, gross, is_vtt)
     if line_rates:
-        line_rates = sort_sea_rr(line_rates, container, gross)
+        line_rates = sort_sea_rr(line_rates, container, gross, is_vtt)
     context = {
         'form': form,
         'direct_sea_rates': direct_sea_rates,

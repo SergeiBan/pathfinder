@@ -68,37 +68,21 @@
         {% if agent_rates %}
         <h5 class="text-primary">Агентские ставки на Море + ЖД</h5>
             {% for rate in agent_rates %}
-                <div class="card border-info text-dark bg-light mb-2">
-                    <div class="card-header"></div>
-                        <div class="card-body">
-                            <div class="card-text">
-                           
-                                Море, $: {{ rate.sea_price }} {{ rate.sea_rate }}
-                               <div class="bg-transparent border-info">
-                                    ЖД, ₽:
-                                    {% if container == '20DC' %}
-                                        {{ rate.rr_price }}
-                                        Прием по станции:
-                                        {% if is_vtt %}{{ rate.rr_rate.end_terminal.vtt_20 }}{% else %}{{ rate.rr_rate.end_terminal.gtd_20 }}{% endif %}
-                                    {% else %}
-                                        {{ rate.rr_rate.rate_40 }}
-                                        Прием по станции:
-                                        {% if is_vtt %}{{ rate.rr_rate.end_terminal.vtt_40 }}{% else %}{{ rate.rr_rate.end_terminal.gtd_40 }}{% endif %}
-                                    {% endif %}
-                                    
-                                    {{ rate.rr_rate }}
-                                    <div class="card border-success mb-3" style="max-width: 18rem;">
-                                        <div class="card-header bg-transparent border-success">Выход судна: {{ rate.etds }}</div>
-                                        <div class="card-body text-success">
-                                            <h5 class="card-title">Success card title</h5>
-                                            <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-                                        </div>
-                                        <div class="card-footer bg-transparent border-success">Footer</div>
-                                    </div>
-                                </div>
-                       </div>
+               
+                <div class="card border-info mb-3">
+                    <div class="card-header bg-transparent border-info">Выход судна: {{ rate.etds }}</div>
+                    <div class="card-body text-dark">
+                        <h5 class="card-title">Линия: {{ rate.carrier }}</h5>
+                        <p class="card-text">Море, $: {{ rate.sea_price }} {{ rate.sea_rate }}</p>
+                    </div>
+                    <div class="card-footer bg-transparent border-info">
+                        ЖД, ₽: {{ rate.rr_price }} Прием по станции, ₽: {{ rate.station }} {{ rate.rr_rate }}
+                    </div>
+                    <div class="card-footer bg-transparent border-info">
+                        Автовывоз по городу, ₽: {{ rate.local_truck }}
                     </div>
                 </div>
+                                
             {% endfor %}
         {% endif %}
 

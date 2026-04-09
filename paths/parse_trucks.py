@@ -32,6 +32,7 @@ def parse_truck_sheet(df):
         
         if isinstance(row[1], str):
             rr_terminal = row[1].strip().upper()
+            
             if rr_terminal not in ACCEPTABLE_INNER_RR:
                 sheet_errors.append(f'Автовывоз: неопознанный ЖД терминал: {rr_terminal}')
                 continue
@@ -79,5 +80,5 @@ def parse_truck_sheet(df):
         else:
             sheet_errors.append(f'Автовывоз: ЖД терминал не найден: {rr_terminal}')
             continue
-
+   
     return sheet_errors

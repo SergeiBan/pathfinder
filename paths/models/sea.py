@@ -128,9 +128,7 @@ class SeaRate(models.Model):
         verbose_name_plural = 'Морские ставки'
 
     def __str__(self):
-        representation = f'{self.sea_line} {self.sea_start_terminal} - {self.sea_end_terminal}'
-        if self.etd:
-            representation = representation + ' ' + ', '.join([etd.__str__() for etd in self.etd.all()])
+        representation = f'{self.sea_start_terminal} - {self.sea_end_terminal}'
         return representation
     
     def get_etds(self):

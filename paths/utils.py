@@ -350,7 +350,7 @@ def check_agent(agent):
     return None
 
 
-def sort_sea_rr(rates: list[SeaRate, InnerRRRate], container: str, gross: Decimal):
+def sort_sea_rr(rates: list[SeaRate, InnerRRRate], container: str, gross: Decimal, is_vtt: bool):
     annotated_rates = []
     for rate in rates:
         total = 0
@@ -361,18 +361,28 @@ def sort_sea_rr(rates: list[SeaRate, InnerRRRate], container: str, gross: Decima
                 rr_price = rate[1].rate_20_24
             else:
                 rr_price = rate[1].rate_20_28
+            # if is_vtt:
+            #     station = rate[1].vtt_20
+            # else:
+            #     station = rate[1].gtd_20
         
         if container == '40HC':
             sea_price = rate[0].rate_40
             rr_price = rate[1].rate_40
+            # if is_vtt:
+            #     station = rate[1].vtt_40
+            # else:
+            #     station = rate[1].gtd_40
 
         total = total + sea_price + rr_price
 
+
         annotated_rates.append({
-            'sea_rate': rate[0], 'sea_price': sea_price, 'etds': rate[0].get_etds(), 'rr_rate': rate[1],
-            'rr_price': rr_price, 'total': total
+            'sea_rate': rate[0], 'sea_price': sea_price, 'etds': rate[0].get_etds(), 'carrier': rate[0].sea_line,
+            'rr_rate': rate[1], 'rr_price': rr_price, 'station': 10000,
+            'local_truck': rate[1].truck, 'total': total
         })
-        print(rate[0].get_etds())
+
 
     sorted_rates = sorted(annotated_rates, key=lambda x: x['total'])
     return sorted_rates
