@@ -355,31 +355,36 @@ def sort_sea_rr(rates: list[SeaRate, InnerRRRate], container: str, gross: Decima
     for rate in rates:
         total = 0
         sea_price, rr_price = 0, 0
-        if container == '20DC':
-            sea_price = rate[0].rate_20
-            if gross <= 24000:
-                rr_price = rate[1].rate_20_24
-            else:
-                rr_price = rate[1].rate_20_28
-            # if is_vtt:
-            #     station = rate[1].vtt_20
-            # else:
-            #     station = rate[1].gtd_20
-        
-        if container == '40HC':
-            sea_price = rate[0].rate_40
-            rr_price = rate[1].rate_40
-            # if is_vtt:
-            #     station = rate[1].vtt_40
-            # else:
-            #     station = rate[1].gtd_40
+
+        try:
+            if container == '20DC':
+                sea_price = rate[0].rate_20
+                if gross <= 24000:
+                    rr_price = rate[1].rate_20_24
+                else:
+                    rr_price = rate[1].rate_20_28
+                if is_vtt:
+                    station = rate[1].vtt_20
+                else:
+                    station = rate[1].gtd_20
+            
+            if container == '40HC':
+                sea_price = rate[0].rate_40
+                rr_price = rate[1].rate_40
+                if is_vtt:
+                    station = rate[1].vtt_40
+                else:
+                    station = rate[1].gtd_40
+        except:
+            print(f'Нет цены приема по станции: {rate[1].end_terminal}')
+            station = 'Не указан'
 
         total = total + sea_price + rr_price
 
 
         annotated_rates.append({
             'sea_rate': rate[0], 'sea_price': sea_price, 'etds': rate[0].get_etds(), 'carrier': rate[0].sea_line,
-            'rr_rate': rate[1], 'rr_price': rr_price, 'station': 10000,
+            'rr_rate': rate[1], 'rr_price': rr_price, 'station': station,
             'local_truck': rate[1].truck, 'total': total
         })
 

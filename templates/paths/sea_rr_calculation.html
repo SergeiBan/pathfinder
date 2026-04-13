@@ -29,19 +29,7 @@
                     <h5 class="text-success">Линейные ставки Море + ЖД</h5>
                     
                         {% for rate in line_rates %}
-                           <div class="card border-info mb-3">
-                                <div class="card-header bg-transparent border-info">Выход судна: {{ rate.etds }}</div>
-                                <div class="card-body text-dark">
-                                    <h5 class="card-title">Линия: {{ rate.carrier }}</h5>
-                                    <p class="card-text">Море, $: {{ rate.sea_price }} {{ rate.sea_rate }}</p>
-                                </div>
-                                <div class="card-footer bg-transparent border-info">
-                                    ЖД, ₽: {{ rate.rr_price }} Прием по станции, ₽: {{ rate.station }} {{ rate.rr_rate }}
-                                </div>
-                                <div class="card-footer bg-transparent border-info">
-                                    Автовывоз по городу, ₽: {{ rate.local_truck }}
-                                </div>
-                            </div>
+                           {% include 'includes/sea_rr.html' %}       
                         {% endfor %}
                     </ul></p>
                 </div>
@@ -64,21 +52,7 @@
         {% if agent_rates %}
         <h5 class="text-primary mb-3">Агентские ставки на Море + ЖД</h5>
             {% for rate in agent_rates %}
-               
-                <div class="card border-info mb-4 bg-light">
-                    <div class="card-header bg-transparent border-info">Выход судна: {{ rate.etds }}</div>
-                    <div class="card-body text-dark">
-                        <h5 class="card-title">Линия: {{ rate.carrier }}</h5>
-                        <p class="card-text">Море, $: {{ rate.sea_price|floatformat:"2g" }} {{ rate.sea_rate }}</p>
-                    </div>
-                    <div class="card-footer bg-transparent border-info">
-                        ЖД, ₽: {{ rate.rr_price|floatformat:"2g" }} Прием по станции, ₽: {{ rate.station|floatformat:"2g" }} {{ rate.rr_rate }}
-                    </div>
-                    <div class="card-footer bg-transparent border-info">
-                        Автовывоз по городу, ₽: {{ rate.local_truck|floatformat:"2g" }}
-                    </div>
-                </div>
-                                
+                {% include 'includes/sea_rr.html' %}        
             {% endfor %}
         {% endif %}
 
