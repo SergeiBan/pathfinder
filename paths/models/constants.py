@@ -1,6 +1,6 @@
 CONTAINER_OPTIONS = (
     ('20DC', '20DC'),
-    ('H0HC', '40HC'),
+    ('40HC', '40HC'),
 )
 
 ACCEPTABLE_LOCAL_CITIES = [
@@ -20,6 +20,20 @@ ACCEPTABLE_LOCAL_HUBS = [
     'МИНСК', 'ОМСК', 'ПЕРМЬ', 'УЛЬЯНОВСК', 'РОСТОВ-НА-ДОНУ',
     'ЛЮБЛИНО'
 ]
+
+DROP_OFF_TRANSLATIONS = {
+    'VLADIVOSTOK': 'ВЛАДИВОСТОК',
+    'NAKHODKA': 'НАХОДКА',
+    'MOSCOW': 'МОСКВА',
+    'NOVOSIBIRSK': 'НОВОСИБИРСК',
+    'EKATERINBURG': 'ЕКАТЕРИНБУРГ',
+    'KRASNOYARSK': 'КРАСНОЯРСК',
+    'ST.PETERSBURG': 'САНКТ-ПЕТЕРБУРГ',
+    'IRKUTSK': 'ИРКУТСК',
+    'KHABAROVSK': 'ХАБАРОВСК', # нет в ACCEPTABLE_LOCAL_HUBS
+    'MINSK': 'МИНСК',
+    'NIZHNEKAMSK': 'НИЖНЕКАМСК'
+}
 
 
 ACCEPTABLE_AGENTS = ['WOSUN']
@@ -55,16 +69,16 @@ PORTS = {
 }
 
 ACCEPTABLE_POLS = [
-    'Shanghai',
-    'Qingdao',
-    'Tianjin',
-    'Ningbo',
-    'Dalian',
-    'Xiamen',
-    'Nansha',
-    'Yantian',
-    'Shekou',
-    'Busan'
+    'SHANGHAI',
+    'QINGDAO',
+    'TIANJIN',
+    'NINGBO',
+    'DALIAN',
+    'XIAMEN',
+    'NANSHA',
+    'YANTIAN',
+    'SHEKOU',
+    'BUSAN'
 ]
 
 ACCEPTABLE_INNER_RR = [
@@ -77,7 +91,7 @@ ACCEPTABLE_INNER_RR = [
     'ЕКАТЕРИНБУРГ-ТОВАРНЫЙ',
     'БАЗАИХА',
     'РОСТОВ-ТОВАРНЫЙ',
-    # ТОЛЬЯТТИ нет терминала
+    'ТОЛЬЯТТИ',
     'КОСТАРИХА',
     'ПЕНЗА-2',
     'ЛАГЕРНАЯ',
@@ -110,14 +124,19 @@ ACCEPTABLE_INNER_RR = [
     'ЧЕМСКИЙ',
     'ОРЕХОВО-ЗУЕВО',
 
+    'КУНЦЕВО 2',
+    'КРЕСТЫ',
+    'ТУЧКОВО',
+    
+
 ]
 
 
 
-RR_NO_CITY = {
-    'Екатеринбург-товарный': 'Екатеринбург',
-    'Ростов-товарный': 'Ростов',
-    'Пенза-2': 'Пенза',
-    'Челябинск-грузовой': 'Челябинск',
-    'Люблино-сортировочный': 'Люблино'
-}
+# RR_NO_CITY = {
+#     'Екатеринбург-товарный': 'Екатеринбург',
+#     'Ростов-товарный': 'Ростов',
+#     'Пенза-2': 'Пенза',
+#     'Челябинск-грузовой': 'Челябинск',
+#     'Люблино-сортировочный': 'Люблино'
+# }

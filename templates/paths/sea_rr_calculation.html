@@ -25,12 +25,11 @@
         {% endif %}
 
         {% if line_rates %}
-            <div class="card mb-2">
-                <div class="card-body">
-                    <h5 class="card-title text-success">Линейные ставки Море + ЖД</h5>
-                    <p class="card-text"><ul>
+           
+                    <h5 class="text-success">Линейные ставки Море + ЖД</h5>
+                    
                         {% for rate in line_rates %}
-                            <li>{{ rate.0 }} + {{ rate.1 }} + автовывоз {{ rate.1.truck }} ₽</li>
+                           {% include 'includes/sea_rr.html' %}       
                         {% endfor %}
                     </ul></p>
                 </div>
@@ -51,16 +50,10 @@
         {% endif %}
 
         {% if agent_rates %}
-            <div class="card mb-2">
-                <div class="card-body">
-                    <h5 class="card-title text-success">Агентские ставки на Море + ЖД</h5>
-                    <p class="card-text"><ul>
-                        {% for rate in agent_rates %}
-                            <li>{{ rate.0 }} + {{ rate.1 }} + автовывоз {{ rate.1.truck }} ₽</li>
-                        {% endfor %}
-                    </ul></p>
-                </div>
-            </div>
+        <h5 class="text-primary mb-3">Агентские ставки на Море + ЖД</h5>
+            {% for rate in agent_rates %}
+                {% include 'includes/sea_rr.html' %}        
+            {% endfor %}
         {% endif %}
 
         {% if agent_sea_rr_truck %}

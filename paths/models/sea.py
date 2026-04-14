@@ -33,25 +33,22 @@ class SeaStartTerminal(models.Model):
 
 class LocalHubCity(models.Model):
     name = models.CharField('Внутренний транспортный хаб', max_length=32, unique=True)
+    local_truck = models.DecimalField(max_digits=9, decimal_places=2, null=True, blank=True)
 
-    def __str__(self):
-            return self.name
-    
     class Meta:
         verbose_name = 'Внутренний транспортный хаб'
         verbose_name_plural = 'Внутренние транспортные хабы'
 
-
-class LocalTruck(models.Model):
-    city = models.OneToOneField(LocalHubCity, on_delete=models.CASCADE, related_name='local_truck', verbose_name='Город локального автовывоза')
-    price = models.DecimalField('Цена автовывоза по городу', max_digits=9, decimal_places=2)
-
     def __str__(self):
-            return f'{self.price} - {self.city}'
+            return self.name
     
-    class Meta:
-        verbose_name = 'Автовывоз внутри города'
-        verbose_name_plural = 'Автовывозы внутри городов'
+    def save(self, *args, **kwargs):
+        if self.name in ['МОСКВА', 'САНКТ-ПЕТЕРБУРГ']:
+            self.local_truck = 25000
+        elif self.name in ['НОВОСИБИРСК', 'ЕКАТЕРИНБУРГ']:
+            self.local_truck = 20000
+
+        super().save(*args, **kwargs)
 
 
 class DistantTruckRate(models.Model):
@@ -122,15 +119,18 @@ class SeaRate(models.Model):
     rate_20 = models.DecimalField('Стоимость за 20ft, $', max_digits=9, decimal_places=2, null=True, blank=True)
     rate_40 = models.DecimalField('Стоимость за 40ft, $', max_digits=9, decimal_places=2, null=True, blank=True)
     intermediate = models.ForeignKey(SeaStartTerminal, on_delete=models.CASCADE, null=True, blank=True, related_name='start_point_rates')
-    agent = models.ForeignKey(ForeignAgent, on_delete=models.CASCADE, null=True, blank=True, related_name='agents')
+    agent = models.ForeignKey(ForeignAgent, verbose_name='Агент', on_delete=models.CASCADE, null=True, blank=True, related_name='agents')
     conversion = models.FloatField(verbose_name='Конвертация, %')
-
-    def __str__(self):
-        representation = f'20ft ${self.rate_20} 40ft ${self.rate_40} {self.sea_line} {self.sea_start_terminal} - {self.sea_end_terminal}'
-        if self.etd:
-            representation = representation + ', '.join([etd.__str__() for etd in self.etd.all()])
-        return representation
     
+
     class Meta:
         verbose_name = 'Морская ставка'
         verbose_name_plural = 'Морские ставки'
+
+    def __str__(self):
+        representation = f'{self.sea_start_terminal} - {self.sea_end_terminal}'
+        return representation
+    
+    def get_etds(self):
+        return ', '.join([etd.__str__() for etd in self.etd.all()])
+    

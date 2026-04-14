@@ -2,21 +2,24 @@ from django.shortcuts import render, redirect
 from .forms import SeaCalculationForm, RRCalculationForm, SeaRRCalculationForm, UploadForm
 from .models import (
     SeaCalculation, SeaRate, InnerRRRate, LocalHubCity, SeaEndTerminal, InnerRRTerminal,
-    DistantTruckRate, SeaStartTerminal, SeaLine, SeaETD, ACCEPTABLE_POLS, ACCEPTABLE_AGENTS
+    DistantTruckRate, SeaStartTerminal, SeaLine, SeaETD, ACCEPTABLE_POLS, ACCEPTABLE_AGENTS,
+    ForeignAgent
 )
 from .utils import (
     get_line_mm_rates, get_agent_mm_rates, find_seapath, find_all_seapaths, get_pol,
     get_carrier, get_pods, get_etd, get_container_prices, make_dates, get_conversion,
-    check_agent
+    check_agent, sort_sea_rr
 )
-from django.db.models import F
+from django.db.models import F, QuerySet
 from django.http import Http404
 from django.contrib.auth.decorators import permission_required
 from django.contrib import messages
 import pandas as pd
 import datetime
 
-from .parse_rates import parse_for
+from .parse_rr import parse_for
+from .parse_trucks import parse_truck_sheet
+from .parse_sea import parse_sea_sheet
 
 
 def index(request):
@@ -51,22 +54,28 @@ def rr_calculation(request):
 
 def sea_rr_calculation(request):
     form = SeaRRCalculationForm(request.POST or None)
-    direct_sea_rates = None
-    sea_truck = None
+    direct_sea_rates: QuerySet[SeaRate] = None
+    sea_truck: list[SeaRate, DistantTruckRate] = None
 
-    line_rates = None 
-    line_sea_rr_truck = None
+    line_rates: QuerySet[SeaRate] = None 
+    line_sea_rr_truck: list[SeaRate, InnerRRRate, DistantTruckRate] = None
 
-    agent_rates = None
-    agent_sea_rr_truck = None
+    agent_rates: QuerySet[SeaRate] = None
+    agent_sea_rr_truck: list[SeaRate, InnerRRRate, DistantTruckRate] = None
 
-    end_terminals = None
+    end_terminals: QuerySet[InnerRRTerminal] = None
     remote_truck_rates = None
     sea_truck = []
+    container: str = None
+    is_vtt = False
+    gross = None
     
     if form.is_valid():
         end_city = form.cleaned_data['end_city']
         particular_rr_terminal = form.cleaned_data['rr_end_terminal']
+        gross = form.cleaned_data['gross']
+        container = form.cleaned_data['container']
+        is_vtt = form.cleaned_data['is_VTT']
         
         # Если выбран конкретный ЖД терминал прибытия
         if particular_rr_terminal:
@@ -94,13 +103,12 @@ def sea_rr_calculation(request):
         # 2 Делим морские ставки на линейные и агентские
         agent_sea_rates = sea_rates.filter(agent__isnull=False)
         line_sea_rates = sea_rates.filter(agent__isnull=True)
-        
+
         line_rates, line_sea_rr_truck = get_line_mm_rates(
-            line_sea_rates, InnerRRRate, end_terminals, form.cleaned_data['container'], end_city)
+            line_sea_rates, InnerRRRate, end_terminals, form.cleaned_data['container'], end_city, gross)
         
         agent_rates, agent_sea_rr_truck = get_agent_mm_rates(
-            agent_sea_rates, InnerRRRate, end_terminals, form.cleaned_data['container'], end_city)
-
+            agent_sea_rates, InnerRRRate, end_terminals, form.cleaned_data['container'], end_city, gross)
 
         # 3. Вдруг возможен автовывоз из портового города в конечный город
         if end_city.ingoing_truck_rates.exists():
@@ -120,10 +128,12 @@ def sea_rr_calculation(request):
             direct_sea_rates = SeaRate.objects.filter(
                 sea_start_terminal=form.cleaned_data['sea_start_terminal'],
                 sea_end_terminal__in=end_terminals
-            ).annotate(truck=F('sea_end_terminal__local_hub_city__local_truck__price'))
+            ).annotate(truck=F('sea_end_terminal__local_hub_city__local_truck'))
 
-        
-
+    if agent_rates:
+        agent_rates = sort_sea_rr(agent_rates, container, gross, is_vtt)
+    if line_rates:
+        line_rates = sort_sea_rr(line_rates, container, gross, is_vtt)
     context = {
         'form': form,
         'direct_sea_rates': direct_sea_rates,
@@ -133,8 +143,10 @@ def sea_rr_calculation(request):
         'line_sea_rr_truck': line_sea_rr_truck,
 
         'agent_rates': agent_rates,
-        'agent_sea_rr_truck': agent_sea_rr_truck
-
+        'agent_sea_rr_truck': agent_sea_rr_truck,
+        'gross': gross,
+        'container': container,
+        'is_vtt': is_vtt
     }
 
     return render(request, 'paths/sea_rr_calculation.html', context)
@@ -145,87 +157,43 @@ def file_upload(request):
         
     if request.method == 'POST':
         form = UploadForm(request.POST, request.FILES)
+
         SeaStartTerminal.objects.all().delete()
         SeaLine.objects.all().delete()
         SeaEndTerminal.objects.all().delete()
         SeaETD.objects.all().delete()
         LocalHubCity.objects.all().delete()
+        SeaRate.objects.all().delete()
+        InnerRRRate.objects.all().delete()
+        ForeignAgent.objects.all().delete()
 
         POL = None
 
         if form.is_valid():
             uploaded_file = request.FILES['uploaded_file']
             all_sheets = pd.read_excel(uploaded_file, sheet_name=None)
+            sheet_errors = []
 
             for sheet_name, df in all_sheets.items():
-
-                if sheet_name == 'FOR':
-                    sheet_errors = parse_for(df)
-                    if sheet_errors:
-                        for error in sheet_errors:
-                            messages.error(request, error)
-                    continue
                 
-                if sheet_name in ACCEPTABLE_POLS:
-                    
-                    for row in df.itertuples(index=False):
+                if sheet_name.upper() in ACCEPTABLE_POLS:
+                    sheet_errors.append(parse_sea_sheet(sheet_name, df))
+                
+                if sheet_name == 'FOR':
+                    sheet_errors.append(parse_for(df))
+                    continue
 
-                        # Прежде всего проверяем, что цена есть хотя бы на один тип контейнера
-                        rate_20 = get_container_prices(row[2])
-                        rate_40 = get_container_prices(row[3])
-                        if not rate_20 and not rate_40:
-                            continue
-
-                        # В первой колонке - порт отправки и дроп офф
-                        first_col = row[0]
-                        if isinstance(first_col, str):
-                            POL, drop_off = get_pol(first_col)
-
-                        # Во второй колонке - линия
-                        second_col = row[1]
-                        if isinstance(second_col, str):
-                            sea_line = get_carrier(second_col)
+                if sheet_name == 'Автовывоз':
+                    sheet_errors.append(parse_truck_sheet(df))
+                    continue
+            
+            if sheet_errors:
+                for error in sheet_errors:
+                    messages.error(request, error)
                         
-                        # В колонке E (пятая) - морские терминалы прибытия
-                        POD_col = row[4]
-                        if isinstance(POD_col, str):
-                            pods = get_pods(POD_col)
-                        
-                        # В колонке F (седьмая) - ETD
-                        year = datetime.date.today().year
-                        etd_col = row[6]
-                        etds = get_etd(etd_col, year)
+            else:
+                messages.success(request, 'Файл успешно загружен!')
 
-                        # В десятой колонке - валидность
-                        validity_col = row[9]
-                        validity_date = make_dates([validity_col], year)[0]
-
-                        # В колонке 12 - ставка конвертации
-                        conversion_rate = get_conversion(row[11])
-
-                        # В колонке 14 - агент или линия
-                        agent = row[13]
-                        is_agent = check_agent(agent)
-
-                        for pod in pods:
-
-                            sr = SeaRate(
-                                sea_line=sea_line,
-                                sea_start_terminal=POL,
-                                validity=validity_date,
-                                rate_20=rate_20,
-                                rate_40=rate_40,
-                                sea_end_terminal=pod,
-                                conversion=conversion_rate,
-                                agent=is_agent
-                            )
-                            sr.save()
-                            if etds:
-                                sr.etd.add(*etds)
-                        
-            messages.success(request, 'Файл успешно загружен!')
-
-            # return redirect('paths:sea_rr_calculation')
     else:
         form = UploadForm()
     

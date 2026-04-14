@@ -1,6 +1,7 @@
 from .models import (
-    RR_NO_CITY, InnerRRRate, InnerRRTerminal, SeaEndTerminal,
-    LocalHubCity, ACCEPTABLE_INNER_RR, ACCEPTABLE_LOCAL_HUBS, SEA_POINTS, CARRIERS
+    InnerRRRate, InnerRRTerminal, SeaEndTerminal,
+    LocalHubCity, ACCEPTABLE_INNER_RR, ACCEPTABLE_LOCAL_HUBS, SEA_POINTS, CARRIERS,
+    ACCEPTABLE_POLS, SeaStartTerminal, SeaLine
 )
 from django.shortcuts import get_object_or_404
 from decimal import Decimal
@@ -46,6 +47,7 @@ def parse_for(df):
     InnerRRTerminal.objects.all().delete()
     
     carrier = None
+    carrier_obj, carrier_created = None, None
     current_pods = None
     correct_pods = []
     sheet_errors = []
@@ -62,6 +64,8 @@ def parse_for(df):
         rr_end_terminal_name = None
         rr_end_city_name = None
         terminal_cost = None
+        pol_obj, pol_created = None, None
+        
 
         if current_pods is None and row[0] != row[0]: # Это верхняя строчка
             continue
@@ -73,24 +77,40 @@ def parse_for(df):
             english_pod = row[0].split('\n')[1].strip().upper()
             english_pod, city = get_correct_pod(english_pod, sheet_errors)
             english_pod = [english_pod]
+            carrier, carrier_obj, carrier_created = None, None, None
             
         # Морские порты с линией
         elif row[0] == row[0] and ':' in row[0]:
-            english_pod = row[0].split('\n')[1].strip().upper()
+            english_pod = row[0].split('\n')[1].strip().upper() # Порт
+            carrier = row[0].split('\n')[0].strip().upper().replace(':', '') # Линия
+            if carrier not in CARRIERS:
+                sheet_errors.append(f'Линия {carrier} неизвестна')
+                current_pods = None
+                continue
+            carrier_obj, carrier_created = SeaLine.objects.get_or_create(name=carrier, defaults={})
             
             # Портов может быть несколько
             if '/' in english_pod:
                 raw_pods = english_pod.split('/')
-                pods = [p.strip() for p in raw_pods]
+                pods = [p.strip().upper() for p in raw_pods]
                 correct_pods = []
                 for p in pods:
                     correct_pod, city = get_correct_pod(p, sheet_errors)
                     correct_pods.append(correct_pod)
             else:
+                correct_pods = None
                 english_pod, city = get_correct_pod(english_pod, sheet_errors)
                 english_pod = [english_pod]
 
         current_pods = correct_pods or english_pod
+        
+        # Проверяем, указан ли порт отправки, для особо строгих линейщиков
+        if isinstance(row[1], str):
+            possible_pol = row[1].strip().upper()
+            if possible_pol not in ACCEPTABLE_POLS:
+                sheet_errors.append(f'Неизвестный POL в ЖД ставке: {possible_pol}')
+                continue
+            pol_obj, pol_created = SeaStartTerminal.objects.get_or_create(name=possible_pol, defaults={})
         
         # Берем ЖД терминал прибытия
         arrival = row[2].strip().upper()
@@ -160,12 +180,15 @@ def parse_for(df):
         except:
             sheet_errors.append(f'FOR Дата обновления - нераспознан формат: {row[10]}')
             continue
-
+        
         # Создаем ЖД терминал
         for pod in current_pods:
 
             # Получаем морской терминал и город
-            terminal = get_object_or_404(SeaEndTerminal, name=pod)
+            try:
+                terminal = SeaEndTerminal.objects.get(name=pod)
+            except:
+                continue
             city = terminal.local_hub_city
 
             # Создаем ЖД терминал отправки - он назван, как морской
@@ -179,22 +202,24 @@ def parse_for(df):
                 name=rr_end_city_name,
                 defaults={}
             )
+            
+            
             rr_end_terminal, created_end_terminal = InnerRRTerminal.objects.get_or_create(
                 name=rr_end_terminal_name,
                 defaults={'city': rr_end_city or created_end_city}
             )
-
+            
             new_rate = InnerRRRate.objects.create(
                 start_terminal=rr_start_terminal or created_start_terminal,
-                end_terminal=rr_end_terminal or created_end_city,
+                end_terminal=rr_end_terminal or created_end_terminal,
                 rate_20_24=rate_20ft_24t or None,
                 rate_20_28=rate_20ft_28t or None,
                 rate_40=rate_40ft or None,
-                line=carrier,
+                line=carrier_obj or carrier_created,
                 is_by_wagon=is_by_wagon,
-                thc=terminal_cost
+                thc=terminal_cost,
+                pol=pol_obj or pol_created
             )
-
 
     return sheet_errors
 

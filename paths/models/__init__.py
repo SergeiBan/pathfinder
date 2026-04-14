@@ -1,6 +1,6 @@
 from .sea import (
     SeaStartTerminal, SeaEndTerminal, SeaLine, SeaRate, SeaETD,
-    LocalHubCity, LocalTruck, DistantTruckRate, ForeignAgent
+    LocalHubCity, DistantTruckRate, ForeignAgent
 )
 from .rr import (
     ForeignRRStartTerminal, RRETD, RRRate, ForeignRRStartCity, InnerRRRate, InnerRRTerminal
@@ -9,6 +9,6 @@ from .rr import (
 from .calculations import SeaCalculation, RRCalculation, SeaRRCalculation, FileUpload
 
 from .constants import (
-    PORTS, ACCEPTABLE_POLS, RR_NO_CITY, ACCEPTABLE_INNER_RR,
+    PORTS, ACCEPTABLE_POLS, ACCEPTABLE_INNER_RR,
     ACCEPTABLE_LOCAL_HUBS, SEA_POINTS, CARRIERS, ACCEPTABLE_AGENTS
 )
