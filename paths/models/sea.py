@@ -30,6 +30,7 @@ class SeaStartTerminal(models.Model):
     class Meta:
         verbose_name = 'Порт отправки'
         verbose_name_plural = 'Порты отправки'
+        ordering = ('name',)
 
 class LocalHubCity(models.Model):
     name = models.CharField('Внутренний транспортный хаб', max_length=32, unique=True)
@@ -38,6 +39,7 @@ class LocalHubCity(models.Model):
     class Meta:
         verbose_name = 'Внутренний транспортный хаб'
         verbose_name_plural = 'Внутренние транспортные хабы'
+        ordering = ('name',)
 
     def __str__(self):
             return self.name
@@ -121,6 +123,7 @@ class SeaRate(models.Model):
     intermediate = models.ForeignKey(SeaStartTerminal, on_delete=models.CASCADE, null=True, blank=True, related_name='start_point_rates')
     agent = models.ForeignKey(ForeignAgent, verbose_name='Агент', on_delete=models.CASCADE, null=True, blank=True, related_name='agents')
     conversion = models.FloatField(verbose_name='Конвертация, %')
+    drop_off = models.ManyToManyField(LocalHubCity, verbose_name='Дроп офф', related_name='sea_rate_drop')
     
 
     class Meta:

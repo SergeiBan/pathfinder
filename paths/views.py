@@ -68,6 +68,8 @@ def sea_rr_calculation(request):
     sea_truck = []
     container: str = None
     is_vtt = False
+    with_guard = False
+
     gross = None
     
     if form.is_valid():
@@ -76,6 +78,7 @@ def sea_rr_calculation(request):
         gross = form.cleaned_data['gross']
         container = form.cleaned_data['container']
         is_vtt = form.cleaned_data['is_VTT']
+        with_guard = form.cleaned_data['with_guard']
         
         # Если выбран конкретный ЖД терминал прибытия
         if particular_rr_terminal:
@@ -89,7 +92,8 @@ def sea_rr_calculation(request):
             form.cleaned_data['container'],
             SeaRate,
             form.cleaned_data['etd_from'],
-            form.cleaned_data['etd_to']
+            form.cleaned_data['etd_to'],
+            end_city
         )
 
         # 1.1 Если не нашлось ставок. НУЖНО БУДЕТ добавить сообщение для пользователей!
@@ -131,9 +135,9 @@ def sea_rr_calculation(request):
             ).annotate(truck=F('sea_end_terminal__local_hub_city__local_truck'))
 
     if agent_rates:
-        agent_rates = sort_sea_rr(agent_rates, container, gross, is_vtt)
+        agent_rates = sort_sea_rr(agent_rates, container, gross, is_vtt, with_guard)
     if line_rates:
-        line_rates = sort_sea_rr(line_rates, container, gross, is_vtt)
+        line_rates = sort_sea_rr(line_rates, container, gross, is_vtt, with_guard)
     context = {
         'form': form,
         'direct_sea_rates': direct_sea_rates,

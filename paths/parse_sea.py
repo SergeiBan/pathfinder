@@ -18,7 +18,7 @@ def parse_sea_sheet(sheet_name, df):
         first_col = row[0]
         try:
             if isinstance(first_col, str): # В колонке порта - не nan
-                POL, drop_off = get_pol(first_col)
+                POL, drop_off = get_pol(first_col, sheet_errors)
             elif not POL: # В ячейке - nan, но прошлый порт не был распознан
                 continue
         except:
@@ -80,5 +80,6 @@ def parse_sea_sheet(sheet_name, df):
             sr.save()
             if etds:
                 sr.etd.add(*etds)
+            sr.drop_off.add(*drop_off)
 
     return sheet_errors

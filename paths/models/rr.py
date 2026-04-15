@@ -81,6 +81,8 @@ class InnerRRRate(models.Model):
     is_by_wagon = models.BooleanField('Повагонная отправка', default=False)
     thc = models.DecimalField('Терминальные расходы', max_digits=9, decimal_places=2)
     pol = models.ForeignKey(SeaStartTerminal, related_name='inner_rr_rates', null=True, blank=True, on_delete=models.CASCADE)
+    guard_20 = models.DecimalField('Охрана 20фт', max_digits=9, decimal_places=2, null=True, blank=True)
+    guard_40 = models.DecimalField('Охрана 40фт', max_digits=9, decimal_places=2, null=True, blank=True)
 
     def _check_for_line(self):
         if self.line:

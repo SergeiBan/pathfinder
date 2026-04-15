@@ -7,21 +7,22 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
             <div class="navbar-nav">
-                <a class="nav-link {% if view_name == 'paths:sea_rr_calculation' %} text-info {% endif %}" href="{% url 'paths:sea_rr_calculation' %}">Мультимодальные</a>
-                <a class="nav-link" href="#">Прямое море</a>
+                <a class="nav-link {% if view_name == 'paths:sea_rr_calculation' %} text-info {% endif %}" href="{% url 'paths:sea_rr_calculation' %}">Мультимодальный расчет</a>
+                
+                {% comment %} <a class="nav-link" href="#">Прямое море</a>
                 <a class="nav-link" href="#">Прямое ЖД</a>
                 <a class="nav-link" href="#">Прямое авто</a>
-                <a class="nav-link" href="#">Прямое авиа</a>
+                <a class="nav-link" href="#">Прямое авиа</a> {% endcomment %}
                 
                 {% if user.is_authenticated %}
 
                 {% if perms.paths.add_fileupload %}
-                    <a class="nav-link {% if view_name == 'paths:upload' %} text-info {% endif %}" href="{% url 'paths:upload' %}">Загрузить ставки</a>
+                    <a class="nav-link {% if view_name == 'paths:upload' %} text-info {% endif %}" href="{% url 'paths:upload' %}">Загрузка ставок</a>
                 {% endif %}
                     <form method="post" action="{% url 'logout' %}" style="display:inline;">
                   {% csrf_token %}
                   <button type="submit" class="nav-link btn btn-link">
-                      Выйти
+                      Выход
                   </button>
                 </form>
                 {% else %}

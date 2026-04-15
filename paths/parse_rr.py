@@ -218,7 +218,9 @@ def parse_for(df):
                 line=carrier_obj or carrier_created,
                 is_by_wagon=is_by_wagon,
                 thc=terminal_cost,
-                pol=pol_obj or pol_created
+                pol=pol_obj or pol_created,
+                guard_20=guard_20ft,
+                guard_40=guard_40ft
             )
 
     return sheet_errors

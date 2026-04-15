@@ -7,7 +7,7 @@ from paths.models.sea import SeaRate
 
 from .models import (
     SeaStartTerminal, SeaLine, SeaETD, SeaEndTerminal, LocalHubCity,
-    PORTS, ForeignAgent, SEA_POINTS, ACCEPTABLE_AGENTS, ACCEPTABLE_POLS
+    PORTS, ForeignAgent, SEA_POINTS, ACCEPTABLE_AGENTS, ACCEPTABLE_POLS, DROP_OFF_TRANSLATIONS
 )
 import sys, datetime
 
@@ -35,7 +35,7 @@ def find_seapath(sea_start_terminal, sea_end_terminal, container, SeaRate, etd_f
     return applicable_rates
 
 
-def find_all_seapaths(sea_start_terminal, container, SeaRate, etd_from=None, etd_to=None):
+def find_all_seapaths(sea_start_terminal, container, SeaRate, etd_from=None, etd_to=None, end_city=None):
     today = date.today()
     applicable_rates = None
     applicable_rates_no_etd = None
@@ -43,18 +43,18 @@ def find_all_seapaths(sea_start_terminal, container, SeaRate, etd_from=None, etd
 
     if container == '20DC':
         applicable_rates_no_etd = SeaRate.objects.filter(
-            sea_start_terminal=sea_start_terminal, etd__etd__isnull=True, rate_20__isnull=False
+            sea_start_terminal=sea_start_terminal, etd__etd__isnull=True, rate_20__isnull=False, drop_off__in=[end_city]
             ).distinct()
         applicable_rates_with_etd = SeaRate.objects.filter(
-            sea_start_terminal=sea_start_terminal, etd__etd__isnull=False, rate_20__isnull=False
+            sea_start_terminal=sea_start_terminal, etd__etd__isnull=False, rate_20__isnull=False, drop_off__in=[end_city]
             ).distinct()
     
     if container == '40HC':
         applicable_rates_no_etd = SeaRate.objects.filter(
-            sea_start_terminal=sea_start_terminal, etd__etd__isnull=True, rate_40__isnull=False
+            sea_start_terminal=sea_start_terminal, etd__etd__isnull=True, rate_40__isnull=False, drop_off__in=[end_city]
             ).distinct()
         applicable_rates_with_etd = SeaRate.objects.filter(
-            sea_start_terminal=sea_start_terminal, etd__etd__isnull=False, rate_40__isnull=False
+            sea_start_terminal=sea_start_terminal, etd__etd__isnull=False, rate_40__isnull=False, drop_off__in=[end_city]
             ).distinct()
     
     if applicable_rates_no_etd:
@@ -178,7 +178,7 @@ def get_agent_mm_rates(agent_rates, InnerRRRate, end_terminals, container, end_c
 
     return (sea_to_rr, sea_rr_truck)
 
-def get_pol(first_col):
+def get_pol(first_col, sheet_errors):
     
     sea_start = first_col.split('\n')
     
@@ -197,7 +197,17 @@ def get_pol(first_col):
         defaults={}
     )
     POL = obj or created
-    return POL, drop_off_points
+
+    drop_off_objs = []
+    for d in drop_off_points:
+        if d not in DROP_OFF_TRANSLATIONS:
+            sheet_errors.append(f'Море: неопознанный город drop off: {d}')
+            continue
+        d_city = DROP_OFF_TRANSLATIONS[d]
+        d_city_obj, is_created = LocalHubCity.objects.get_or_create(name=d_city, defaults={})
+        drop_off_objs.append(d_city_obj)
+
+    return POL, drop_off_objs
 
 
 def get_carrier(second_col):
@@ -351,7 +361,7 @@ def check_agent(agent):
     return None
 
 
-def sort_sea_rr(rates: list[SeaRate, InnerRRRate], container: str, gross: Decimal, is_vtt: bool):
+def sort_sea_rr(rates: list[SeaRate, InnerRRRate], container: str, gross: Decimal, is_vtt: bool, with_guard: bool):
     annotated_rates = []
     for rate in rates:
         total = 0
@@ -391,6 +401,8 @@ def sort_sea_rr(rates: list[SeaRate, InnerRRRate], container: str, gross: Decima
             'rr_rate': rate[1], 'rr_price': rr_price, 'station': station,
             'local_truck': rate[1].truck, 'total': total
         })
+        if with_guard:
+            pass
 
 
     sorted_rates = sorted(annotated_rates, key=lambda x: x['total'])
