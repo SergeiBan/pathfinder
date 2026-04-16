@@ -2,10 +2,10 @@
     <div class="card-header bg-transparent border-info">Выход судна: {{ rate.etds }}</div>
     <div class="card-body text-dark">
         <h5 class="card-title">Линия: {{ rate.carrier }}</h5>
-        <p class="card-text">Море, $: {{ rate.sea_price|floatformat:"2g" }} {{ rate.sea_rate }}</p>
+        <p class="card-text">FOB, $: {{ rate.sea_price|floatformat:"2g" }} {{ rate.sea_rate }}</p>
     </div>
     <div class="card-footer bg-transparent border-info">
-        ЖД, ₽: {{ rate.rr_price|floatformat:"2g" }} {{ rate.rr_rate }}
+        FOR, ₽: {{ rate.rr_price|floatformat:"2g" }} {{ rate.rr_rate }} {% if with_guard %}<br>Охрана, ₽: {{ rate.guard }}{% endif %}
     </div>
     <div class="card-footer bg-transparent border-info">
         Раскредитация, ₽: {{ rate.station|floatformat:"2g" }} Автовывоз по городу, ₽: {{ rate.local_truck|floatformat:"2g" }}

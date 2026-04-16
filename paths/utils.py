@@ -79,16 +79,25 @@ def find_all_seapaths(sea_start_terminal, container, SeaRate, etd_from=None, etd
     return applicable_rates_no_etd or applicable_rates_with_etd
 
 
-def get_inner_rr_rates(ar_cities, container, InnerRRRate, end_terminals, gross, is_agent_rate):
+def get_inner_rr_rates(ar_cities, container, InnerRRRate, end_terminals, gross, is_agent_rate, is_vtt):
     # Получаем все ЖД ставки из всех морских терминалов прибытия во все ЖД терминалы города доставки
-    
+    if is_vtt and container == '20DC':
+        field_name = 'vtt_20'
+    elif not is_vtt and container == '20DC':
+        field_name = 'gtd_20'
+    elif is_vtt and container == '40HC':
+        field_name = 'vtt_40'
+    elif not is_vtt and container == '40HC':
+        field_name = 'gtd_40'
+
+    lookup = {f"end_terminal__{field_name}__isnull": "False"}
     rr_rates = None
     if container == '20DC' and gross <= 24000:
         rr_rates = InnerRRRate.objects.filter(
             (Q(end_terminal__in=end_terminals) &
             Q(rate_20_24__isnull=False)),
             line__isnull=is_agent_rate,
-            start_terminal__name__in=ar_cities
+            start_terminal__name__in=ar_cities, **lookup
         ).distinct().annotate(truck=F('end_terminal__city__local_truck'))
 
 
@@ -106,12 +115,12 @@ def get_inner_rr_rates(ar_cities, container, InnerRRRate, end_terminals, gross, 
     
     return rr_rates
 
-def get_line_mm_rates(line_rates, InnerRRRate, end_terminals, container, end_city, gross):
+def get_line_mm_rates(line_rates, InnerRRRate, end_terminals, container, end_city, gross, is_vtt):
     sea_to_rr = []
     sea_rr_truck = []
     sea_endnames = line_rates.values('sea_end_terminal__name')
     # Получаем все ЖД ставки из всех морских терминалов прибытия во все ЖД терминалы города доставки
-    rr_rates = get_inner_rr_rates(sea_endnames, container, InnerRRRate, end_terminals, gross, is_agent_rate=False)
+    rr_rates = get_inner_rr_rates(sea_endnames, container, InnerRRRate, end_terminals, gross, is_agent_rate=False, is_vtt=is_vtt)
   
     # Все морские ставки линии сочетаем со всеми ЖД ставками по критериям: город и линия
     for sea_rate in line_rates:
@@ -146,12 +155,12 @@ def get_line_mm_rates(line_rates, InnerRRRate, end_terminals, container, end_cit
     return (sea_to_rr, sea_rr_truck)
     
 
-def get_agent_mm_rates(agent_rates, InnerRRRate, end_terminals, container, end_city, gross):
+def get_agent_mm_rates(agent_rates, InnerRRRate, end_terminals, container, end_city, gross, is_vtt):
     sea_to_rr = []
     sea_rr_truck = []
     sea_endnames = agent_rates.values('sea_end_terminal__name')
     # Получаем все ЖД ставки из всех морских терминалов прибытия во все ЖД терминалы города доставки
-    rr_rates = get_inner_rr_rates(sea_endnames, container, InnerRRRate, end_terminals, gross, is_agent_rate=True)
+    rr_rates = get_inner_rr_rates(sea_endnames, container, InnerRRRate, end_terminals, gross, is_agent_rate=True, is_vtt=is_vtt)
     
     for sea_rate in agent_rates:
             for rr_rate in rr_rates:
@@ -366,44 +375,47 @@ def sort_sea_rr(rates: list[SeaRate, InnerRRRate], container: str, gross: Decima
     for rate in rates:
         total = 0
         sea_price, rr_price = 0, 0
+        
+        if container == '20DC':
+            sea_price = rate[0].rate_20
 
-        try:
-            if container == '20DC':
-                sea_price = rate[0].rate_20
+            if gross <= 24000:
+                rr_price = rate[1].rate_20_24
+            else:
+                rr_price = rate[1].rate_20_28
 
-                if gross <= 24000:
-                    rr_price = rate[1].rate_20_24
-                else:
-                    rr_price = rate[1].rate_20_28
-
-                if is_vtt:
-                    station = rate[1].end_terminal.vtt_20
-                else:
-                    station = rate[1].end_terminal.gtd_20
-            
-            if container == '40HC':
-                sea_price = rate[0].rate_40
-                rr_price = rate[1].rate_40
-                if is_vtt:
-                    station = rate[1].end_terminal.vtt_40
-                else:
-                    station = rate[1].end_terminal.gtd_40
-        except Exception as e:
-            print(f'{e}')
-            station = 'Не указан'
+            if is_vtt:
+                station = rate[1].end_terminal.vtt_20
+            else:
+                station = rate[1].end_terminal.gtd_20
+        
+        if container == '40HC':
+            sea_price = rate[0].rate_40
+            rr_price = rate[1].rate_40
+            if is_vtt:
+                station = rate[1].end_terminal.vtt_40
+            else:
+                station = rate[1].end_terminal.gtd_40
+        
 
         rr_price += rate[1].thc
-        total = total + sea_price + rr_price + station
 
-
+        guard = None
+        if with_guard:
+            if container == '20DC' and rate[1].guard_20 is not None:
+                guard = rate[1].guard_20
+            if container == '40HC' and rate[1].guard_40 is not None:
+                guard = rate[1].guard_40
+        if not guard: # Убрать, когда в FOR заполним охрану до конца
+            guard = 0
+        
+        total = total + sea_price + rr_price + station + guard
         annotated_rates.append({
             'sea_rate': rate[0], 'sea_price': sea_price, 'etds': rate[0].get_etds(), 'carrier': rate[0].sea_line,
             'rr_rate': rate[1], 'rr_price': rr_price, 'station': station,
-            'local_truck': rate[1].truck, 'total': total
+            'local_truck': rate[1].truck, 'total': total, 'guard': guard
         })
-        if with_guard:
-            pass
-
+        
 
     sorted_rates = sorted(annotated_rates, key=lambda x: x['total'])
     return sorted_rates

@@ -109,10 +109,14 @@ def sea_rr_calculation(request):
         line_sea_rates = sea_rates.filter(agent__isnull=True)
 
         line_rates, line_sea_rr_truck = get_line_mm_rates(
-            line_sea_rates, InnerRRRate, end_terminals, form.cleaned_data['container'], end_city, gross)
+            line_sea_rates, InnerRRRate, end_terminals, form.cleaned_data['container'],
+            end_city, gross, is_vtt
+        )
         
         agent_rates, agent_sea_rr_truck = get_agent_mm_rates(
-            agent_sea_rates, InnerRRRate, end_terminals, form.cleaned_data['container'], end_city, gross)
+            agent_sea_rates, InnerRRRate, end_terminals, form.cleaned_data['container'],
+            end_city, gross, is_vtt
+        )
 
         # 3. Вдруг возможен автовывоз из портового города в конечный город
         if end_city.ingoing_truck_rates.exists():
@@ -150,7 +154,8 @@ def sea_rr_calculation(request):
         'agent_sea_rr_truck': agent_sea_rr_truck,
         'gross': gross,
         'container': container,
-        'is_vtt': is_vtt
+        'is_vtt': is_vtt,
+        'with_guard': with_guard
     }
 
     return render(request, 'paths/sea_rr_calculation.html', context)
