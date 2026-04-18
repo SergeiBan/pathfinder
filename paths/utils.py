@@ -90,7 +90,7 @@ def get_inner_rr_rates(ar_cities, container, InnerRRRate, end_terminals, gross, 
     elif not is_vtt and container == '40HC':
         field_name = 'gtd_40'
 
-    lookup = {f"end_terminal__{field_name}__isnull": "False"}
+    lookup = {f"end_terminal__{field_name}__isnull": False}
     rr_rates = None
     if container == '20DC' and gross <= 24000:
         rr_rates = InnerRRRate.objects.filter(
@@ -103,14 +103,16 @@ def get_inner_rr_rates(ar_cities, container, InnerRRRate, end_terminals, gross, 
 
     elif container == '20DC':
         rr_rates = InnerRRRate.objects.filter(
-            (Q(end_terminal__in=end_terminals) & Q(rate_20_28__isnull=False)), line__isnull=is_agent_rate
+            (Q(end_terminal__in=end_terminals) & Q(rate_20_28__isnull=False)), line__isnull=is_agent_rate,
+            start_terminal__name__in=ar_cities, **lookup
         ).distinct().annotate(truck=F('end_terminal__city__local_truck'))
 
     if container == '40HC':
         rr_rates = InnerRRRate.objects.filter(
             (Q(end_terminal__in=end_terminals) &
             Q(rate_40__isnull=False)),
-            line__isnull=is_agent_rate
+            line__isnull=is_agent_rate,
+            start_terminal__name__in=ar_cities, **lookup
         ).distinct().annotate(truck=F('end_terminal__city__local_truck'))
     
     return rr_rates
