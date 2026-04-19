@@ -30,10 +30,19 @@ class SeaRRCalculationForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['end_city'].queryset = LocalHubCity.objects.filter(sea_rate_drop__isnull=False).distinct()
+        # sea_stations = InnerRRTerminal.objects.filter(city__sea_terminals__isnull=False)
+        # print(sea_stations)
+        local_cities = LocalHubCity.objects.filter(
+            sea_rate_drop__isnull=False,
+            sea_terminals__isnull=True
+        ).distinct()
+        self.fields['end_city'].queryset = local_cities
+    
 
     rr_end_terminal = forms.ModelChoiceField(
-        queryset=InnerRRTerminal.objects.all(),
+        queryset=InnerRRTerminal.objects.filter(
+            city__sea_terminals__isnull=True, city__sea_rate_drop__isnull=False
+        ).distinct(),
         label='Если нужен конкретный ЖД терминал',
         required=False
     )
