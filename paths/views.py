@@ -196,12 +196,12 @@ def file_upload(request):
                     sheet_errors.append(parse_truck_sheet(df))
                     continue
             
-            if sheet_errors:
+            if any(sheet_errors):
                 for error in sheet_errors:
                     messages.error(request, error)
-                        
             else:
-                messages.success(request, 'Файл успешно загружен!')
+                # messages.success(request, 'Файл успешно загружен!')
+                return redirect('paths:sea_rr_calculation')
 
     else:
         form = UploadForm()

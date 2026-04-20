@@ -411,6 +411,7 @@ def sort_sea_rr(rates: list[SeaRate, InnerRRRate], container: str, gross: Decima
         if not guard: # Убрать, когда в FOR заполним охрану до конца
             guard = 0
         
+        sea_price = sea_price + (sea_price * rate[0].conversion)
         total = total + sea_price + rr_price + station + guard
         annotated_rates.append({
             'sea_rate': rate[0], 'sea_price': sea_price, 'etds': rate[0].get_etds(), 'carrier': rate[0].sea_line,

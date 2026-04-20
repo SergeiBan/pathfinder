@@ -122,7 +122,7 @@ class SeaRate(models.Model):
     rate_40 = models.DecimalField('Стоимость за 40ft, $', max_digits=9, decimal_places=2, null=True, blank=True)
     intermediate = models.ForeignKey(SeaStartTerminal, on_delete=models.CASCADE, null=True, blank=True, related_name='start_point_rates')
     agent = models.ForeignKey(ForeignAgent, verbose_name='Агент', on_delete=models.CASCADE, null=True, blank=True, related_name='agents')
-    conversion = models.FloatField(verbose_name='Конвертация, %')
+    conversion = models.DecimalField(verbose_name='Конвертация, %', max_digits=4, decimal_places=2)
     drop_off = models.ManyToManyField(LocalHubCity, verbose_name='Дроп офф', related_name='sea_rate_drop')
     
 
