@@ -27,7 +27,7 @@ DROP_OFF_TRANSLATIONS = {
 }
 
 
-ACCEPTABLE_AGENTS = ['WOSUN']
+ACCEPTABLE_AGENTS = ['WOSUN', 'TORGMOLL']
 
 SEA_POINTS = {
     'НАХОДКА': {
@@ -69,7 +69,8 @@ ACCEPTABLE_POLS = [
     'NANSHA',
     'YANTIAN',
     'SHEKOU',
-    'BUSAN'
+    'BUSAN',
+    'RIZHAO'
 ]
 
 ACCEPTABLE_INNER_RR = [
