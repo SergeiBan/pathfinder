@@ -98,8 +98,8 @@ class InnerRRRate(models.Model):
     def __str__(self):
         line = self._check_for_line()
         truck = self.check_for_truck()
-        if line:
-             return f'{line}. {self.start_terminal} - {self.end_terminal}{truck}'
+        # if line:
+        #      return f'{line}. {self.start_terminal} - {self.end_terminal}{truck}'
         return f'{self.start_terminal} - {self.end_terminal}'
     
     class Meta:

@@ -6,65 +6,13 @@
     <div class="col-md-6 mx-auto">
         {% if form.is_valid %}
 
-        {% if direct_sea_rates %}
-            <div class="card mb-2">
-                <div class="card-body">
-                    <h5 class="card-title text-success">Прямое море</h5>
-                    <p class="card-text"><ul>{% for rate in direct_sea_rates %}<li>{{ rate }} + автовывоз {{ rate.truck }} ₽{% endfor %}</li></ul></p>
-                </div>
-            </div>
-        {% endif %}
-
-        {% if sea_truck %}
-            <div class="card mb-2">
-                <div class="card-body">
-                    <h5 class="card-title text-success">Прямое море с автовывозом в другой город</h5>
-                    <p class="card-text"><ul>{% for rate in sea_truck %}<li>{{ rate.0 }} + {{ rate.1 }}{% endfor %}</li></ul></p>
-                </div>
-            </div>
-        {% endif %}
-
-        {% if line_rates %}
-         
-            <h5 class="text-success">Линейные ставки Море + ЖД</h5>
-            
-            {% for rate in line_rates %}
-                {% include 'includes/sea_rr.html' %}       
-            {% endfor %}
+            {% if mm_rates %}
+                <h5 class="text-primary mb-3">Море + ЖД</h5>
+                {% for rate in mm_rates %}
+                    {% include 'includes/sea_rr.html' %}       
+                {% endfor %}
+            {% endif %}
                 
-        {% endif %}
-
-        {% if line_sea_rr_truck %}
-            <div class="card mb-2">
-                <div class="card-body">
-                    <h5 class="card-title text-success">Линейные ставки Море + ЖД с автовывозом в другой город</h5>
-                    <p class="card-text"><ul>
-                        {% for rate in line_sea_rr_truck %}
-                            <li>{{ rate.0 }} + {{ rate.1 }} + {{ rate.2 }} ₽</li>
-                        {% endfor %}
-                    </ul></p>
-                </div>
-            </div>
-        {% endif %}
-
-        {% if agent_rates %}
-        <h5 class="text-primary mb-3">Агентские ставки на Море + ЖД</h5>
-            {% for rate in agent_rates %}
-                {% include 'includes/sea_rr.html' %}        
-            {% endfor %}
-        {% endif %}
-
-        {% if agent_sea_rr_truck %}
-            <div class="card mb-2">
-                <div class="card-body">
-                    <h5 class="card-title text-success">Агентские ставки на море + ЖД с автовывозом в другой город</h5>
-                    <p class="card-text"><ul>
-                        {% for rate in agent_sea_rr_truck %}<li>{{ rate.0 }} + {{ rate.1 }} + {{ rate.2 }}</li>{% endfor %}
-                    </ul></p>
-                </div>
-            </div>
-        {% endif %}
-            
         {% endif %}
         
         <form method="POST">
@@ -91,8 +39,6 @@
                 </div>
             </div>
 
-
-            {% comment %} {% bootstrap_form form %} {% endcomment %}
             {% bootstrap_button button_type="submit" content="Посчитать" button_class="btn-info w-100" %}
         </form>
     </div>

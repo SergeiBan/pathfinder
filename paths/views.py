@@ -8,7 +8,7 @@ from .models import (
 from .utils import (
     get_line_mm_rates, get_agent_mm_rates, find_seapath, find_all_seapaths, get_pol,
     get_carrier, get_pods, get_etd, get_container_prices, make_dates, get_conversion,
-    check_agent, sort_sea_rr
+    check_agent, sort_sea_rr, sort_everything
 )
 from django.db.models import F, QuerySet
 from django.http import Http404
@@ -142,6 +142,8 @@ def sea_rr_calculation(request):
         agent_rates = sort_sea_rr(agent_rates, container, gross, is_vtt, with_guard)
     if line_rates:
         line_rates = sort_sea_rr(line_rates, container, gross, is_vtt, with_guard)
+
+    sorted_mm_rates = sort_everything(agent_rates, line_rates)
     context = {
         'form': form,
         'direct_sea_rates': direct_sea_rates,
@@ -155,7 +157,8 @@ def sea_rr_calculation(request):
         'gross': gross,
         'container': container,
         'is_vtt': is_vtt,
-        'with_guard': with_guard
+        'with_guard': with_guard,
+        'mm_rates': sorted_mm_rates
     }
 
     return render(request, 'paths/sea_rr_calculation.html', context)

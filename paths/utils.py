@@ -422,3 +422,9 @@ def sort_sea_rr(rates: list[SeaRate, InnerRRRate], container: str, gross: Decima
 
     sorted_rates = sorted(annotated_rates, key=lambda x: x['total'])
     return sorted_rates
+
+
+def sort_everything(agent_rates, line_rates):
+    united_rates = agent_rates + line_rates
+    sorted_rates = sorted(united_rates, key=lambda x: x['total'])
+    return sorted_rates
