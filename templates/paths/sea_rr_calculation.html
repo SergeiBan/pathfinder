@@ -25,15 +25,13 @@
         {% endif %}
 
         {% if line_rates %}
-           
-                    <h5 class="text-success">Линейные ставки Море + ЖД</h5>
-                    
-                        {% for rate in line_rates %}
-                           {% include 'includes/sea_rr.html' %}       
-                        {% endfor %}
-                    </ul></p>
-                </div>
-            </div>
+         
+            <h5 class="text-success">Линейные ставки Море + ЖД</h5>
+            
+            {% for rate in line_rates %}
+                {% include 'includes/sea_rr.html' %}       
+            {% endfor %}
+                
         {% endif %}
 
         {% if line_sea_rr_truck %}
