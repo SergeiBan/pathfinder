@@ -143,7 +143,13 @@ def sea_rr_calculation(request):
     if line_rates:
         line_rates = sort_sea_rr(line_rates, container, gross, is_vtt, with_guard)
 
-    sorted_mm_rates = sort_everything(agent_rates, line_rates)
+    if agent_rates and line_rates:
+        sorted_mm_rates = sort_everything(agent_rates, line_rates)
+    elif agent_rates:
+        sorted_mm_rates = agent_rates
+    elif line_rates:
+        sorted_mm_rates = line_rates
+    
     context = {
         'form': form,
         'direct_sea_rates': direct_sea_rates,
