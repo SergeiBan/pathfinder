@@ -42,18 +42,18 @@ def find_all_seapaths(sea_start_terminal, container, SeaRate, etd_from=None, etd
     applicable_rates_with_etd = None
 
     if container == '20DC':
-        applicable_rates_no_etd = SeaRate.objects.filter(
+        applicable_rates_no_etd = SeaRate.objects.select_related('sea_start_terminal', 'sea_line', 'sea_end_terminal').prefetch_related('etd').filter(
             sea_start_terminal=sea_start_terminal, etd__etd__isnull=True, rate_20__isnull=False, drop_off__in=[end_city]
             ).distinct()
-        applicable_rates_with_etd = SeaRate.objects.filter(
+        applicable_rates_with_etd = SeaRate.objects.select_related('sea_start_terminal', 'sea_line', 'sea_end_terminal').prefetch_related('etd').filter(
             sea_start_terminal=sea_start_terminal, etd__etd__isnull=False, rate_20__isnull=False, drop_off__in=[end_city]
             ).distinct()
     
     if container == '40HC':
-        applicable_rates_no_etd = SeaRate.objects.filter(
+        applicable_rates_no_etd = SeaRate.objects.select_related('sea_start_terminal', 'sea_line', 'sea_end_terminal').prefetch_related('etd').filter(
             sea_start_terminal=sea_start_terminal, etd__etd__isnull=True, rate_40__isnull=False, drop_off__in=[end_city]
             ).distinct()
-        applicable_rates_with_etd = SeaRate.objects.filter(
+        applicable_rates_with_etd = SeaRate.objects.select_related('sea_start_terminal', 'sea_line', 'sea_end_terminal').prefetch_related('etd').filter(
             sea_start_terminal=sea_start_terminal, etd__etd__isnull=False, rate_40__isnull=False, drop_off__in=[end_city]
             ).distinct()
     
@@ -93,7 +93,7 @@ def get_inner_rr_rates(ar_cities, container, InnerRRRate, end_terminals, gross, 
     lookup = {f"end_terminal__{field_name}__isnull": False}
     rr_rates = None
     if container == '20DC' and gross <= 24000:
-        rr_rates = InnerRRRate.objects.filter(
+        rr_rates = InnerRRRate.objects.select_related('start_terminal', 'line', 'end_terminal__city').filter(
             (Q(end_terminal__in=end_terminals) &
             Q(rate_20_24__isnull=False)),
             line__isnull=is_agent_rate,
@@ -102,13 +102,13 @@ def get_inner_rr_rates(ar_cities, container, InnerRRRate, end_terminals, gross, 
 
 
     elif container == '20DC':
-        rr_rates = InnerRRRate.objects.filter(
+        rr_rates = InnerRRRate.objects.select_related('start_terminal', 'line', 'end_terminal__city').filter(
             (Q(end_terminal__in=end_terminals) & Q(rate_20_28__isnull=False)), line__isnull=is_agent_rate,
             start_terminal__name__in=ar_cities, **lookup
         ).distinct().annotate(truck=F('end_terminal__city__local_truck'))
 
     if container == '40HC':
-        rr_rates = InnerRRRate.objects.filter(
+        rr_rates = InnerRRRate.objects.select_related('start_terminal', 'line', 'end_terminal__city').filter(
             (Q(end_terminal__in=end_terminals) &
             Q(rate_40__isnull=False)),
             line__isnull=is_agent_rate,
@@ -134,26 +134,8 @@ def get_line_mm_rates(line_rates, InnerRRRate, end_terminals, container, end_cit
                 if not rr_rate.pol or rr_rate.pol == sea_rate.sea_start_terminal:
                     sea_to_rr.append([sea_rate, rr_rate])
     
-    # Если нужен автовывоз в другой город
-    if end_city.ingoing_truck_rates.exists():
-        remote_truck_rates = end_city.ingoing_truck_rates.all()
-        all_rr_rates = InnerRRRate.objects.all() # Все ЖД ставки внутри России
-
-        # Сопоставляем ставки ЖД и автовывоза по критерию - город
-        rr_plus_truck_rates = []
-        for remote_truck in remote_truck_rates:
-            for rr_rate in all_rr_rates:
-                if rr_rate.end_terminal.city == remote_truck.start_city:
-                    rr_plus_truck_rates.append([rr_rate, remote_truck])
-    
-        # Сопоставляем морские ставки и ЖД ставки по городу, получим путь море - ЖД - автовывоз
-        for sea_rate in line_rates:
-            for rr_truck in rr_plus_truck_rates:
-                if (
-                    sea_rate.sea_end_terminal.local_hub_city == rr_truck[0].start_terminal.city
-                    and sea_rate.sea_line == rr_truck[0].line
-                ):
-                    sea_rr_truck.append([sea_rate, rr_truck[0], rr_truck[1]])
+    sea_rr_truck = None
+  
     return (sea_to_rr, sea_rr_truck)
     
 
@@ -169,24 +151,8 @@ def get_agent_mm_rates(agent_rates, InnerRRRate, end_terminals, container, end_c
                 if sea_rate.sea_end_terminal.name == rr_rate.start_terminal.name:
                     sea_to_rr.append([sea_rate, rr_rate])
 
-    # Если возможен автовывоз из другого города
-    if end_city.ingoing_truck_rates.exists():
-        remote_truck_rates = end_city.ingoing_truck_rates.all()
-        all_rr_rates = InnerRRRate.objects.filter(line__isnull=True)
-
-        # Сопоставляем ставки ЖД и автовывоза по критерию - город
-        rr_plus_truck_rates = []
-        for remote_truck in remote_truck_rates:
-            for rr_rate in all_rr_rates:
-                if rr_rate.end_terminal.city == remote_truck.start_city:
-                    rr_plus_truck_rates.append([rr_rate, remote_truck])
-
-        # Сопоставляем морские ставки и ЖД ставки по городу, получим путь море - ЖД - автовывоз
-        for sea_rate in agent_rates:
-            for rr_truck in rr_plus_truck_rates:
-                if sea_rate.sea_end_terminal.local_hub_city == rr_truck[0].start_terminal.city:
-                    sea_rr_truck.append([sea_rate, rr_truck[0], rr_truck[1]])
-
+    sea_rr_truck = None
+    
     return (sea_to_rr, sea_rr_truck)
 
 def get_pol(first_col, sheet_errors):
@@ -330,7 +296,6 @@ def get_etd(etd_col, year):
                 etd=new_date,
             )
             new_etds.append(obj or created)
-            
     return new_etds
 
 

@@ -118,26 +118,7 @@ def sea_rr_calculation(request):
             end_city, gross, is_vtt
         )
 
-        # 3. Вдруг возможен автовывоз из портового города в конечный город
-        if end_city.ingoing_truck_rates.exists():
-            remote_truck_rates = end_city.ingoing_truck_rates.all()
-            
-            # Сопоставляем морские ставки и ставки автовывоза по городу,
-            # если возможен автовывоз из портового горада, минуя ЖД
-            for sea_rate in sea_rates:
-                for truck_rate in remote_truck_rates:
-                    if sea_rate.sea_end_terminal.local_hub_city == truck_rate.start_city:
-                        sea_truck.append([sea_rate, truck_rate])
-
-        # 4. Проверям, что пункт назначения - портовый город и получаем прямые морские ставки
-        is_port_city = end_city.sea_terminals.exists()
-        if is_port_city:
-            end_terminals = end_city.sea_terminals.all()
-            direct_sea_rates = SeaRate.objects.filter(
-                sea_start_terminal=form.cleaned_data['sea_start_terminal'],
-                sea_end_terminal__in=end_terminals
-            ).annotate(truck=F('sea_end_terminal__local_hub_city__local_truck'))
-
+        
     if agent_rates:
         agent_rates = sort_sea_rr(agent_rates, container, gross, is_vtt, with_guard)
     if line_rates:

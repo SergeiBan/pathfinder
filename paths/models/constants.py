@@ -44,7 +44,7 @@ SEA_POINTS = {
     },
 }
 
-CARRIERS = ['NECOLINE', 'TFL', 'LOGOPER', 'MSC', 'EUROSIB']
+CARRIERS = ['NECOLINE', 'TFL', 'LOGOPER', 'MSC', 'EUROSIB', 'PANDA']
 
 PORTS = {
     'Vladivostok': [
