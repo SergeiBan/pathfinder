@@ -69,7 +69,7 @@ def sea_rr_calculation(request):
     container: str = None
     is_vtt = False
     with_guard = False
-
+    pod = None
     gross = None
     
     if form.is_valid():
@@ -79,12 +79,14 @@ def sea_rr_calculation(request):
         container = form.cleaned_data['container']
         is_vtt = form.cleaned_data['is_VTT']
         with_guard = form.cleaned_data['with_guard']
+        pod = form.cleaned_data['sea_end_terminals']
         
         # Если выбран конкретный ЖД терминал прибытия
         if particular_rr_terminal:
             end_terminals = InnerRRTerminal.objects.filter(pk=form.cleaned_data['rr_end_terminal'].pk)
         else:
             end_terminals = end_city.rr_terminals.all()
+        
         
         # 1. Получаем все морские ставки из терминала отправления во все российские терминалы
         sea_rates = find_all_seapaths(
@@ -93,7 +95,8 @@ def sea_rr_calculation(request):
             SeaRate,
             form.cleaned_data['etd_from'],
             form.cleaned_data['etd_to'],
-            end_city
+            end_city, 
+            pod
         )
 
         # 1.1 Если не нашлось ставок. НУЖНО БУДЕТ добавить сообщение для пользователей!

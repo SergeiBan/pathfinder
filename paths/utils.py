@@ -35,7 +35,7 @@ def find_seapath(sea_start_terminal, sea_end_terminal, container, SeaRate, etd_f
     return applicable_rates
 
 
-def find_all_seapaths(sea_start_terminal, container, SeaRate, etd_from=None, etd_to=None, end_city=None):
+def find_all_seapaths(sea_start_terminal, container, SeaRate, etd_from=None, etd_to=None, end_city=None, pod=None):
     today = date.today()
     applicable_rates = None
     applicable_rates_no_etd = None
@@ -74,9 +74,15 @@ def find_all_seapaths(sea_start_terminal, container, SeaRate, etd_from=None, etd
         elif etd_from is not None and etd_to is not None:
             applicable_rates_with_etd = applicable_rates_with_etd.filter(etd__etd__gte=etd_from, etd__etd__lte=etd_to).distinct()
     
+    result_rates = None
     if applicable_rates_no_etd and applicable_rates_with_etd:
-        return applicable_rates_no_etd | applicable_rates_with_etd
-    return applicable_rates_no_etd or applicable_rates_with_etd
+        result_rates = applicable_rates_no_etd | applicable_rates_with_etd
+    else:
+        result_rates = applicable_rates_no_etd or applicable_rates_with_etd
+
+    if pod:
+        result_rates = result_rates.filter(sea_end_terminal=pod)
+    return result_rates
 
 
 def get_inner_rr_rates(ar_cities, container, InnerRRRate, end_terminals, gross, is_agent_rate, is_vtt):

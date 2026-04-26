@@ -1,6 +1,6 @@
 from django import forms
-from .models import SeaCalculation, RRCalculation, SeaRRCalculation, InnerRRTerminal, FileUpload, LocalHubCity
-
+from .models import SeaCalculation, RRCalculation, SeaRRCalculation, InnerRRTerminal, FileUpload, LocalHubCity, SeaEndTerminal
+from django.db.models import F
 
 class SeaCalculationForm(forms.ModelForm):
     
@@ -26,6 +26,11 @@ class RRCalculationForm(forms.ModelForm):
         }
 
 
+class RRTerminalChoiceField(forms.ModelChoiceField):
+    def label_from_instance(self, obj):
+        return f"({obj.city.name}) {obj.name}"
+
+
 class SeaRRCalculationForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
@@ -39,17 +44,23 @@ class SeaRRCalculationForm(forms.ModelForm):
         self.fields['end_city'].queryset = local_cities
     
 
-    rr_end_terminal = forms.ModelChoiceField(
+    rr_end_terminal = RRTerminalChoiceField(
         queryset=InnerRRTerminal.objects.filter(
             city__sea_terminals__isnull=True, city__sea_rate_drop__isnull=False
-        ).distinct(),
+        ).distinct().order_by('city__name', 'name'),
         label='Если нужен конкретный ЖД терминал',
+        required=False
+    )
+
+    sea_end_terminals = forms.ModelChoiceField(
+        queryset=SeaEndTerminal.objects.all(),
+        label='Если нужен конкретный порт прибытия',
         required=False
     )
     
     class Meta:
         model = SeaRRCalculation
-        fields = ('sea_start_terminal', 'etd_from', 'etd_to', 'end_city', 'rr_end_terminal', 'container', 'gross', 'is_VTT', 'with_guard')
+        fields = ('sea_start_terminal', 'sea_end_terminals', 'etd_from', 'etd_to', 'end_city', 'rr_end_terminal', 'container', 'gross', 'is_VTT', 'with_guard')
 
         widgets = {
             'etd_from': forms.DateInput(attrs={'type': 'date'}),
