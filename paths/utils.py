@@ -9,7 +9,7 @@ from .models import (
     SeaStartTerminal, SeaLine, SeaETD, SeaEndTerminal, LocalHubCity,
     PORTS, ForeignAgent, SEA_POINTS, ACCEPTABLE_AGENTS, ACCEPTABLE_POLS, DROP_OFF_TRANSLATIONS
 )
-import sys, datetime
+import sys, datetime, math
 
 
 def find_seapath(sea_start_terminal, sea_end_terminal, container, SeaRate, etd_from=None, etd_to=None):
@@ -95,6 +95,13 @@ def get_inner_rr_rates(ar_cities, container, InnerRRRate, end_terminals, gross, 
         field_name = 'vtt_40'
     elif not is_vtt and container == '40HC':
         field_name = 'gtd_40'
+    
+    overweight = None
+    if container == '20DC' and gross >= 18000:
+        overweight = math.ceil(gross / 1000)
+    elif container == '40HC' and gross >= 20000:
+        overweight = math.ceil(gross / 1000)
+    overweight = overweight * 2500
 
     lookup = {f"end_terminal__{field_name}__isnull": False}
     rr_rates = None
