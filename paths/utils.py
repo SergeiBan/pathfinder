@@ -98,9 +98,9 @@ def get_inner_rr_rates(ar_cities, container, InnerRRRate, end_terminals, gross, 
     
     overweight = None
     if container == '20DC' and gross >= 18000:
-        overweight = math.ceil(gross / 1000)
+        overweight = math.ceil(gross / 1000) - 18
     elif container == '40HC' and gross >= 20000:
-        overweight = math.ceil(gross / 1000)
+        overweight = math.ceil(gross / 1000) - 20
     overweight = overweight * 2500
 
     lookup = {f"end_terminal__{field_name}__isnull": False}
